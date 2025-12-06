@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // URL de tu Apps Script (¡REEMPLAZA CON LA TUYA!)
-    const API_URL = 'https://script.google.com/home/projects/1s11IKgHhrHhPQHJnwOVCObSXErBdkqTDVkcegf5w8joWdGzUet7r1q-2/edit';
+    const API_URL = 'https://script.google.com/d/1Lgr7CeqGYXqOerDwO5qh10pC-h0jXDuyeLl0YJrR67Oha-MQkciUEl8P';
     
     // Elementos del DOM
     const moviesContainer = document.getElementById('moviesContainer');
