@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // URL de tu Apps Script (¡REEMPLAZA CON LA TUYA!)
-    const API_URL = 'https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec';
+    const API_URL = 'https://script.google.com/home/projects/1s11IKgHhrHhPQHJnwOVCObSXErBdkqTDVkcegf5w8joWdGzUet7r1q-2/edit';
     
     // Elementos del DOM
     const moviesContainer = document.getElementById('moviesContainer');
@@ -105,7 +105,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     }
-
+function doGet() {
+  const folderId = '1MsmvgjfMvQU4sDTM4QAD1ZfX8xoETnjV'; // ID CORRECTO, SIN PARÁMETROS
+  const folder = DriveApp.getFolderById(folderId);
+  const files = folder.getFiles();
+  
+  let movies = [];
+  
+  while (files.hasNext()) {
+    const file = files.next();
+    const fileId = file.getId();
+    
+    // Resto del código igual...
     // Cargar películas al iniciar
     loadMovies();
 });
