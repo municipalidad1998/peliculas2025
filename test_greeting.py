@@ -23,7 +23,7 @@ class TestGreeting(unittest.TestCase):
     def test_greet_not_empty(self):
         """Test that the greeting is not empty"""
         result = greet()
-        self.assertTrue(len(result) > 0)
+        self.assertGreater(len(result), 0)
 
 
 if __name__ == "__main__":
