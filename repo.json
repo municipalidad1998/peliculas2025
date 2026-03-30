@@ -2,11 +2,5 @@
   "name": "DoramaExpress Repo",
   "description": "Extensiones de Doramas",
   "manifestVersion": 1,
-  "plugins": [
-    {
-      "name": "DoramaExpress",
-      "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/DoramaExpress.cs3",
-      "version": 1
-    }
-  ]
+  "plugins": []
 }
