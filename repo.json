@@ -1,11 +1,26 @@
 {
   "name": "DoramaExpress Repo",
-  "description": "Extensiones de Doramas",
+  "description": "Películas, series, anime y doramas",
   "manifestVersion": 1,
   "plugins": [
     {
-      "name": "DoramaExpress",
-      "url": "https://cdn.jsdelivr.net/gh/municipalidad1998/peliculas2025@main/DoramaExpress.cs3",
+      "name": "Peliculas",
+      "url": "https://cdn.jsdelivr.net/gh/municipalidad1998/peliculas2025@main/plugins/Peliculas.cs3",
+      "version": 1
+    },
+    {
+      "name": "Series",
+      "url": "https://cdn.jsdelivr.net/gh/municipalidad1998/peliculas2025@main/plugins/Series.cs3",
+      "version": 1
+    },
+    {
+      "name": "Anime",
+      "url": "https://cdn.jsdelivr.net/gh/municipalidad1998/peliculas2025@main/plugins/Anime.cs3",
+      "version": 1
+    },
+    {
+      "name": "Doramas",
+      "url": "https://cdn.jsdelivr.net/gh/municipalidad1998/peliculas2025@main/plugins/Doramas.cs3",
       "version": 1
     }
   ]
