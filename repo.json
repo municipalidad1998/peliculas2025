@@ -5,7 +5,7 @@
   "plugins": [
     {
       "name": "DoramaExpress",
-      "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/DoramaExpress.cs3",
+      "url": "https://cdn.jsdelivr.net/gh/municipalidad1998/peliculas2025@main/DoramaExpress.cs3",
       "version": 1
     }
   ]
