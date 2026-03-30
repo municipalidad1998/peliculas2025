@@ -1,0 +1,31 @@
+// Archivo: DoramaExpress.cs3
+
+package com.doramaexpress
+
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
+
+class DoramaExpress : MainAPI() {
+    override var name = "DoramaExpress"
+    override var mainUrl = "https://example.com"
+    override val hasMainPage = true
+    override var lang = "es"
+
+    override val supportedTypes = setOf(TvType.AsianDrama)
+
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        return newHomePageResponse(
+            listOf(
+                HomePageList(
+                    "Doramas",
+                    listOf(
+                        newTvSeriesSearchResponse(
+                            "Demo Dorama",
+                            "https://example.com"
+                        )
+                    )
+                )
+            )
+        )
+    }
+}
