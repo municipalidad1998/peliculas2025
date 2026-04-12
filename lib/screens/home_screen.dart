@@ -73,9 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             if (_service.recentReleases.isNotEmpty)
               _buildRow("Estrenos Globales", _service.recentReleases),
-            _buildRow("Te recomendamos", _service.allSeries.take(20).toList()),
-            _buildRow("Visto recientemente", _service.allMovies.take(20).toList()),
-            _buildRow("Catálogo de Series Asiáticas", _service.allSeries.skip(20).take(20).toList()),
+            _buildRow("Te recomendamos", (_service.allSeries.toList()..shuffle()).take(40).toList()),
+            _buildRow("Visto recientemente", (_service.allMovies.toList()..shuffle()).take(40).toList()),
+            _buildRow("Catálogo de Series Asiáticas", (_service.allSeries.toList()..shuffle()).take(40).toList()),
             const SizedBox(height: 40),
           ],
         ),

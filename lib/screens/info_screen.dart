@@ -34,8 +34,8 @@ class _InfoScreenState extends State<InfoScreen> {
       final query = Uri.encodeComponent(cleanTitle);
       final apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; // Clave pública segura TMDB
       
-      final response = await http.get(Uri.parse(
-          'https://api.themoviedb.org/3/search/multi?api_key=$apiKey&language=es-MX&query=$query'
+      var response = await http.get(Uri.parse(
+          'https://api.themoviedb.org/3/search/multi?api_key=$apiKey&query=$query'
       ));
       
       if (response.statusCode == 200) {

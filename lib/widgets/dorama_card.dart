@@ -50,7 +50,7 @@ class _DoramaCardState extends State<DoramaCard> {
       final apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb';
       
       final response = await http.get(Uri.parse(
-          'https://api.themoviedb.org/3/search/multi?api_key=$apiKey&language=es-MX&query=$query'
+          'https://api.themoviedb.org/3/search/multi?api_key=$apiKey&query=$query'
       ));
       
       if (response.statusCode == 200) {

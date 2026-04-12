@@ -28,22 +28,28 @@ class NativeScraperService {
         }
       }
 
-      // Buscar botones de servidores comunes
-      final links = document.querySelectorAll('li, a, button, .server');
+      // Buscar botones de servidores comunes y etiquetas genéricas
+      final links = document.querySelectorAll('li, a, button, div.server, .opt');
       int counter = 1;
       for (var link in links) {
         final src = link.attributes['data-video'] ?? link.attributes['href'] ?? link.attributes['data-src'] ?? '';
-        if (_isValidServerDomain(src)) {
-          final text = link.text.trim().isNotEmpty ? link.text.trim() : 'Opción \$counter';
-          found.add(VideoServer(name: text, url: src));
+        final text = link.text.trim().toLowerCase();
+        // Si el texto sugiere un servidor o la URL contiene palabras clave
+        if (src.isNotEmpty && (_isValidServerDomain(src) || src.contains('streamwish') || src.contains('filemoon') || src.contains('vidguard'))) {
+          // Extraer nombre decente
+          var name = link.text.trim();
+          if (name.isEmpty) name = text.contains('lat') ? 'Servidor Latino \$counter' : 'Servidor \$counter';
+          found.add(VideoServer(name: name, url: src));
           counter++;
         }
       }
 
-      // Eliminar duplicados simulado
+      // Eliminar duplicados simulado priorizando los que tengan nombre
       final Map<String, VideoServer> unique = {};
       for (var v in found) {
-        unique[v.url] = v;
+        if (!unique.containsKey(v.url) || unique[v.url]!.name.startsWith('Server:')) {
+           unique[v.url] = v;
+        }
       }
       return unique.values.toList();
     } catch (e) {
@@ -65,7 +71,7 @@ class NativeScraperService {
         final document = parse(response.body);
         
         // Estrategia 1: etiqueta <video> o <source> directa
-        final sources = document.querySelectorAll('source');
+        final sources = document.querySelectorAll('source, video');
         for (var s in sources) {
           final src = s.attributes['src'] ?? '';
           if (src.contains('.mp4') || src.contains('.m3u8')) {
@@ -73,15 +79,40 @@ class NativeScraperService {
           }
         }
         
-        // Estrategia 2: RegExp en el HTML (buscando 'file': 'http...mp4')
-        final RegExp urlRegex = RegExp("(http[s]?://[^\\\\s\'\"]+\\\\.(?:mp4|m3u8)[^\\\\s\'\"]*)");
+        // Estrategia 2: Regex buscando "file": "http..."
+        final RegExp fileRegex = RegExp(r'''(?:file|src|source)\s*[:=]\s*["'](http[^"']+(?:mp4|m3u8)[^"']*)["']''');
+        final match2 = fileRegex.firstMatch(response.body);
+        if (match2 != null && match2.group(1) != null) {
+          return _cleanUrl(match2.group(1)!);
+        }
+
+        // Estrategia 3: URL general de mp4/m3u8 en cualquier lado del script
+        final RegExp urlRegex = RegExp(r"(http[s]?://[^\s'\"<>]+(?:mp4|m3u8)[^\s'\"<>]*)");
         final match = urlRegex.firstMatch(response.body);
         if (match != null && match.group(1) != null) {
           return _cleanUrl(match.group(1)!);
         }
+        
+        // Estrategia 4: Bypass AllOrigins si es Cloudflare (403) - Esto no corre aquí porque fue 200, pero preparamos el regex unpacking
+      } else if (response.statusCode == 403 || response.statusCode == 503) {
+         // Bypass Cloudflare con Proxy libre si nos bloquea
+         final fallback = await http.get(Uri.parse('https://api.allorigins.win/get?url=\${Uri.encodeComponent(serverUrl)}'));
+         if (fallback.statusCode == 200) {
+            final jsonResp = json.decode(fallback.body);
+            final htmlStr = jsonResp['contents'] as String;
+            final RegExp fileRegex = RegExp(r'''(?:file|src|source)\s*[:=]\s*["'](http[^"']+(?:mp4|m3u8)[^"']*)["']''');
+            final matchFallback = fileRegex.firstMatch(htmlStr);
+            if (matchFallback != null && matchFallback.group(1) != null) {
+              return _cleanUrl(matchFallback.group(1)!);
+            }
+         }
       }
     } catch (e) {}
 
+    // Fallback absoluto: Si no encontramos el json/mp4 interno y la URL original era válida, la pasamos por defecto
+    if (serverUrl.contains('stream') || serverUrl.contains('vid')) {
+        // Podría intentarse inyectar un referer, devolvemos null para que caiga y muestre error
+    }
     return null; // Nada encontrado
   }
 
