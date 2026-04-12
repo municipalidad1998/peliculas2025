@@ -107,13 +107,14 @@ class _InfoScreenState extends State<InfoScreen> {
                   else
                     Container(color: Colors.grey[900]),
                   
-                  // Gradiente oscuro
+                  // Gradiente oscuro HBO Max Style
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.black, Colors.transparent],
+                        colors: [Colors.black, Colors.black.withOpacity(0.5), Colors.transparent],
                         begin: Alignment.bottomCenter,
-                        end: Alignment.center,
+                        end: Alignment.topCenter,
+                        stops: const [0.0, 0.4, 1.0],
                       ),
                     ),
                   ),
@@ -162,17 +163,17 @@ class _InfoScreenState extends State<InfoScreen> {
 
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 55,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(8),
                         )
                       ),
                       icon: const Icon(Icons.play_arrow, size: 30),
-                      label: const Text('Reproducir en Doramflix', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      label: const Text('REPRODUCIR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -186,6 +187,19 @@ class _InfoScreenState extends State<InfoScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  
+                  // Fakes tabs and Cast in HBO Max style
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      const Text("EPISODIOS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                      Text("SUGERENCIAS", style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                      Text("EXTRAS", style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(color: Colors.grey),
+                  const SizedBox(height: 10),
 
                   if (_isLoading)
                     const Center(child: CircularProgressIndicator(color: Colors.red))

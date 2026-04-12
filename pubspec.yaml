@@ -43,6 +43,8 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   video_player: ^2.8.6
   chewie: ^1.8.1
+  volume_controller: ^3.0.0
+  screen_brightness: ^0.3.0
 
 dev_dependencies:
   flutter_test:

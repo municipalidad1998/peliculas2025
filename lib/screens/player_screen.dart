@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
+import '../widgets/hbo_player_controls.dart';
 
 class VideoServer {
   final String name;
@@ -34,7 +34,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // Native Player State
   bool _isNativeMode = false;
   VideoPlayerController? _videoPlayerController;
-  ChewieController? _chewieController;
 
   // Extractor State
   List<VideoServer> _extractedServers = [];
@@ -59,7 +58,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Future<void> _startNativePlayer(String rawVideoUrl) async {
     // Si ya hay uno, matarlo
     _videoPlayerController?.dispose();
-    _chewieController?.dispose();
 
     setState(() {
       _isSniffing = false;
@@ -71,21 +69,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
     
     try {
       await _videoPlayerController!.initialize();
-      _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController!,
-        autoPlay: true,
-        looping: false,
-        aspectRatio: _videoPlayerController!.value.aspectRatio,
-        allowFullScreen: true,
-        allowMuting: true,
-        materialProgressColors: ChewieProgressColors(
-          playedColor: Colors.red,
-          handleColor: Colors.red,
-          backgroundColor: Colors.grey,
-          bufferedColor: Colors.white30,
-        ),
-      );
-      setState(() {}); // Refrescar UI para mostrar chewie
+      _videoPlayerController!.play();
+      setState(() {}); 
     } catch (e) {
       if (mounted) {
         setState(() => _snifferStatus = "Error decodificando flujo nativo");
@@ -109,6 +94,52 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     _webViewController?.loadUrl(urlRequest: URLRequest(url: WebUri(server.url)));
   }
+  void _showSettingsPanel() {
+     showModalBottomSheet(
+       context: context,
+       backgroundColor: Colors.grey[900],
+       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(left: Radius.circular(20))),
+       isScrollControlled: true,
+       builder: (context) {
+          return FractionallySizedBox(
+            widthFactor: 0.4,
+            heightFactor: 1.0,
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("⚙️ Ajustes (HBO Style)", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Divider(color: Colors.grey),
+                  SwitchListTile(
+                    title: const Text("Decodificado por software", style: TextStyle(color: Colors.white)),
+                    value: false,
+                    onChanged: (v) {},
+                    activeColor: Colors.purpleAccent,
+                  ),
+                  ListTile(
+                    title: const Text("Servidor Actual", style: TextStyle(color: Colors.white)),
+                    subtitle: Text(_currentServerName, style: const TextStyle(color: Colors.purpleAccent)),
+                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                    onTap: () {
+                       Navigator.pop(context);
+                       _showServerSelection();
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text("Servidor con búfer extra", style: TextStyle(color: Colors.white)),
+                    value: true,
+                    onChanged: (v) {},
+                    activeColor: Colors.purpleAccent,
+                  ),
+                  const Spacer(),
+                ],
+              ),
+            ),
+          );
+       }
+     );
+  }
 
   void _showServerSelection() {
      showModalBottomSheet(
@@ -130,12 +161,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                      itemBuilder: (context, index) {
                         final s = _extractedServers[index];
                         return Card(
-                          color: s.isLatino ? Colors.green[900] : Colors.grey[800],
+                          color: s.isLatino ? Colors.purple[900] : Colors.grey[800],
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             leading: Icon(s.isLatino ? Icons.g_translate : Icons.public, color: Colors.white),
-                            title: Text(s.name.isEmpty ? 'Servidor \${index+1}' : s.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            trailing: const Icon(Icons.flash_on, color: Colors.orangeAccent),
+                            title: Text(s.name.isEmpty ? 'Servidor ${index+1}' : s.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            trailing: const Icon(Icons.flash_on, color: Colors.purpleAccent),
                             onTap: () => _onServerSelected(s),
                           ),
                         );
@@ -146,7 +177,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             ),
           );
        }
-     );
+      );
   }
 
   @override
@@ -284,15 +315,30 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
             ),
             
-          // Capa 3: El Reproductor de Cine Puramente Nativo (Chewie)
-          if (_isNativeMode && _chewieController != null && _videoPlayerController != null)
+          // Capa 3: El Reproductor de Cine Puramente Nativo
+          if (_isNativeMode && _videoPlayerController != null)
              Container(
                color: Colors.black,
                width: double.infinity,
                height: double.infinity,
                child: _videoPlayerController!.value.isInitialized
-                  ? Chewie(controller: _chewieController!)
-                  : const Center(child: CircularProgressIndicator(color: Colors.white)),
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Center(
+                          child: AspectRatio(
+                            aspectRatio: _videoPlayerController!.value.aspectRatio,
+                            child: VideoPlayer(_videoPlayerController!),
+                          ),
+                        ),
+                        HboPlayerControls(
+                          controller: _videoPlayerController!,
+                          title: widget.title,
+                          onSettingsTap: _showSettingsPanel,
+                        ),
+                      ],
+                    )
+                  : const Center(child: CircularProgressIndicator(color: Colors.purpleAccent)),
              ),
         ],
       ),
