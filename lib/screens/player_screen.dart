@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-// ignore: depend_on_referenced_packages
-import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 
 class VideoServer {
   final String name;
@@ -25,141 +25,89 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  late WebViewController _controller;
-  bool _isLoading = true;
-  bool _isDirectPlayMode = false;
+  // Sniffer State
+  InAppWebViewController? _webViewController;
+  bool _isWebVisible = true;
+  bool _isSniffing = false;
+  String _snifferStatus = "Analizando...";
   
+  // Native Player State
+  bool _isNativeMode = false;
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
+
+  // Extractor State
   List<VideoServer> _extractedServers = [];
-  String _currentServerName = "Auto-Selección";
+  String _currentServerName = "Buscando...";
 
   @override
   void initState() {
     super.initState();
-    
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.black)
-      ..addJavaScriptChannel('Extractor', onMessageReceived: _handleExtractedData)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (String url) async {
-            if (mounted && !_isDirectPlayMode) {
-              // Si estamos en la página inicial, intentamos robar los servidores!
-              _startScrapingServers();
-              setState(() => _isLoading = false);
-            } else if (mounted && _isDirectPlayMode) {
-              setState(() => _isLoading = false);
-            }
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
-      
-    if (_controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
-      (_controller.platform as AndroidWebViewController).setMediaPlaybackRequiresUserGesture(false);
-    }
+    // Forzamos rotación normal al iniciar
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
   @override
   void dispose() {
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     super.dispose();
   }
 
-  void _startScrapingServers() {
-    // Inyectamos un JS muy agresivo que caza los reproductores integrados en la carga inicial
-    final String jsCode = """
-      (function() {
-         let list = [];
-         
-         // Buscar iframes puros (Fembed, Mega, DoodStream, etc)
-         let frames = document.querySelectorAll('iframe');
-         for (let i = 0; i < frames.length; i++) {
-            let src = frames[i].src || frames[i].dataset.src;
-            if(src && src.includes('http') && !src.includes('facebook') && !src.includes('ads')) {
-               let n = src.split('/')[2];
-               list.push({name: 'Opcion (' + n + ')', url: src});
-            }
-         }
-         
-         // Buscar enlaces rotulados como servidores ('Latino', 'Castellano', 'Subbed')
-         let options = document.querySelectorAll('li, a, button, div.server');
-         options.forEach(opt => {
-            let text = opt.innerText.trim().toLowerCase();
-            let src = opt.getAttribute('data-video') || opt.getAttribute('data-src') || opt.href;
-            if(src && src.includes('http') && (text.includes('lat') || text.includes('sub') || text.includes('mega') || text.includes('fembed') || text.includes('netu'))) {
-               list.push({name: opt.innerText.trim(), url: src});
-            }
-         });
-         
-         if(list.length > 0) {
-            Extractor.postMessage(JSON.stringify(list));
-         }
+  Future<void> _startNativePlayer(String rawVideoUrl) async {
+    // Si ya hay uno, matarlo
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
 
-         // Inyector removedor de basura comercial y barras para aparentar ser Nativo
-         let css = `header, footer, nav, aside, .sidebar, iframe[src*="ads"], .widget, .comments { display: none !important; }`;
-         let style = document.createElement('style'); style.innerHTML = css; document.head.appendChild(style);
-      })();
-    """;
-    
-    Future.delayed(const Duration(seconds: 2), () {
-      if(mounted && !_isDirectPlayMode) _controller.runJavaScript(jsCode);
+    setState(() {
+      _isSniffing = false;
+      _isNativeMode = true;
+      _isWebVisible = false;
     });
-    Future.delayed(const Duration(seconds: 4), () {
-      if(mounted && !_isDirectPlayMode) _controller.runJavaScript(jsCode);
-    });
-  }
 
-  void _handleExtractedData(JavaScriptMessage message) {
-    if (_isDirectPlayMode) return;
+    _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(rawVideoUrl));
     
     try {
-      final List<dynamic> data = json.decode(message.message);
-      List<VideoServer> found = [];
-      
-      for(var d in data) {
-         if(d['url'] != null && d['url'].toString().startsWith('http')) {
-             if(!found.any((f) => f.url == d['url'])) {
-                 found.add(VideoServer(name: d['name'], url: d['url']));
-             }
-         }
+      await _videoPlayerController!.initialize();
+      _chewieController = ChewieController(
+        videoPlayerController: _videoPlayerController!,
+        autoPlay: true,
+        looping: false,
+        aspectRatio: _videoPlayerController!.value.aspectRatio,
+        allowFullScreen: true,
+        allowMuting: true,
+        materialProgressColors: ChewieProgressColors(
+          playedColor: Colors.red,
+          handleColor: Colors.red,
+          backgroundColor: Colors.grey,
+          bufferedColor: Colors.white30,
+        ),
+      );
+      setState(() {}); // Refrescar UI para mostrar chewie
+    } catch (e) {
+      if (mounted) {
+        setState(() => _snifferStatus = "Error decodificando flujo nativo");
       }
-      
-      if (found.isNotEmpty) {
-        setState(() {
-          // Ordenamos para que los latinos queden arriba de todo
-          found.sort((a, b) {
-            if(a.isLatino && !b.isLatino) return -1;
-            if(!a.isLatino && b.isLatino) return 1;
-            return 0;
-          });
-          _extractedServers = found;
-        });
-        
-        // Mostrar automaticamente la selección
-        _showServerSelection();
-      }
-    } catch(e) {
-      print("Extractor err: \$e");
     }
   }
 
-  void _playDirectly(VideoServer server) {
-     Navigator.pop(context); // Cierra menu
-     
-     // Activa Pantalla Completa y Horizontal!
-     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
-     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  void _onServerSelected(VideoServer server) {
+    Navigator.pop(context); // Cerrar menu
+    
+    // Apagar player nativo si existe
+    _videoPlayerController?.pause();
+    
+    setState(() {
+      _isNativeMode = false;
+      _isSniffing = true;
+      _isWebVisible = false; // Ocultamos web, mostramos letrero de sniffing
+      _snifferStatus = "Extrayendo flujo bruto de \${server.name}...";
+      _currentServerName = server.name;
+    });
 
-     setState(() {
-       _isDirectPlayMode = true; // Entramos en modo fullscreen limpio
-       _isLoading = true;
-       _currentServerName = server.name;
-     });
-     
-     _controller.loadRequest(Uri.parse(server.url));
+    _webViewController?.loadUrl(urlRequest: URLRequest(url: WebUri(server.url)));
   }
 
   void _showServerSelection() {
@@ -172,9 +120,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
                children: [
-                 const Text("☁️ Servidores Encontrados", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                 const Text("☁️ Servidores Nativos Encontrados", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                  const SizedBox(height: 10),
-                 const Text("Selecciona un servidor. Los servidores en LATINO (si la página los provee) están fijados arriba. Las calidades dependerán del servidor elegido.", style: TextStyle(color: Colors.grey, fontSize: 13), textAlign: TextAlign.center,),
+                 const Text("Selecciona un servidor. La app interceptará la red secreta de la web para robar la película cruda y transmitirla.", style: TextStyle(color: Colors.grey, fontSize: 13), textAlign: TextAlign.center,),
                  const SizedBox(height: 15),
                  Expanded(
                    child: ListView.builder(
@@ -187,8 +135,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           child: ListTile(
                             leading: Icon(s.isLatino ? Icons.g_translate : Icons.public, color: Colors.white),
                             title: Text(s.name.isEmpty ? 'Servidor \${index+1}' : s.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            trailing: const Icon(Icons.play_circle_fill, color: Colors.red),
-                            onTap: () => _playDirectly(s),
+                            trailing: const Icon(Icons.flash_on, color: Colors.orangeAccent),
+                            onTap: () => _onServerSelected(s),
                           ),
                         );
                      },
@@ -209,39 +157,146 @@ class _PlayerScreenState extends State<PlayerScreen> {
         title: Text(widget.title),
         backgroundColor: Colors.black,
         actions: [
-           if(_extractedServers.isNotEmpty)
+           if (_extractedServers.isNotEmpty)
              TextButton.icon(
                style: TextButton.styleFrom(foregroundColor: Colors.white),
-               icon: const Icon(Icons.switch_video, color: Colors.blueAccent),
-               label: const Text("Cambiar Servidor"),
+               icon: const Icon(Icons.router, color: Colors.blueAccent),
+               label: const Text("Servidores"),
                onPressed: _showServerSelection,
              )
         ],
       ),
       body: Stack(
         children: [
-          WebViewWidget(controller: _controller),
-          
-          if (_isLoading)
+          // Capa 1: El Sniffer Híbrido (Invisible si estamos en Nativo, visible si no se han extraido iframes para Series)
+          if (!_isNativeMode)
+            InAppWebView(
+              initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                mediaPlaybackRequiresUserGesture: false,
+                useShouldInterceptRequest: true,
+                transparentBackground: true,
+              ),
+              onWebViewCreated: (controller) {
+                _webViewController = controller;
+                
+                // Canal Mágico
+                controller.addJavaScriptHandler(
+                  handlerName: 'Extractor',
+                  callback: (args) {
+                    if (args.isEmpty) return;
+                    try {
+                      final List<dynamic> data = json.decode(args[0]);
+                      List<VideoServer> found = [];
+                      for(var d in data) {
+                         if(d['url'] != null && d['url'].toString().startsWith('http')) {
+                             if(!found.any((f) => f.url == d['url'])) {
+                                 found.add(VideoServer(name: d['name'], url: d['url']));
+                             }
+                         }
+                      }
+                      
+                      if (found.isNotEmpty) {
+                        setState(() {
+                          found.sort((a, b) {
+                            if(a.isLatino && !b.isLatino) return -1;
+                            if(!a.isLatino && b.isLatino) return 1;
+                            return 0;
+                          });
+                          _extractedServers = found;
+                          // Si es la página inicial y hay servidores, auto-robamos el primero!
+                          if (_isWebVisible) {
+                            _onServerSelected(found.first);
+                          }
+                        });
+                      }
+                    } catch(e) {}
+                  }
+                );
+              },
+              shouldInterceptRequest: (controller, request) async {
+                if (!_isSniffing) return null;
+                
+                final url = request.url.toString();
+                // SNIFFER: Atrapando tráfico de Video M3U8 o .MP4
+                if (url.contains('.m3u8') || (url.contains('.mp4') && !url.contains('ads'))) {
+                  print(">>> ATTRAPADO RAW: \$url");
+                  Future.microtask(() => _startNativePlayer(url));
+                  return WebResourceResponse(contentType: "text/plain", data: Uint8List.fromList([]), statusCode: 200, reasonPhrase: "Intercepted");
+                }
+                return null;
+              },
+              onLoadStop: (controller, url) async {
+                 // Inyector removedor de basura web
+                 await controller.evaluateJavascript(source: """
+                    let css = `header, footer, nav, aside, .sidebar, iframe[src*="ads"], .widget, .comments { display: none !important; }`;
+                    let style = document.createElement('style'); style.innerHTML = css; document.head.appendChild(style);
+                    document.body.style.backgroundColor = 'black';
+                 """);
+                 
+                 // Buscador agresivo de botones y servidores
+                 await controller.evaluateJavascript(source: """
+                    (function() {
+                       let list = [];
+                       let frames = document.querySelectorAll('iframe');
+                       for (let i = 0; i < frames.length; i++) {
+                          let s = frames[i].src || frames[i].dataset.src;
+                          if(s && s.includes('http') && !s.includes('facebook') && !s.includes('ads')) {
+                             list.push({name: 'Iframe (' + s.split('/')[2] + ')', url: s});
+                          }
+                       }
+                       
+                       let opts = document.querySelectorAll('li, a, button, div.server, .opt');
+                       opts.forEach(opt => {
+                          let text = opt.innerText.trim().toLowerCase();
+                          let s = opt.getAttribute('data-video') || opt.getAttribute('data-src') || opt.href;
+                          if(s && s.includes('http') && (text.includes('lat') || text.includes('sub') || text.includes('mega') || text.includes('fembed'))) {
+                             list.push({name: opt.innerText.trim(), url: s});
+                          }
+                       });
+                       
+                       if(list.length > 0) window.flutter_inappwebview.callHandler('Extractor', JSON.stringify(list));
+                    })();
+                 """);
+              },
+            ),
+            
+          // Capa 2: Pantalla de "Sniffing" Ocultadora
+          if (!_isNativeMode && (!_isWebVisible || _isSniffing))
             Container(
               color: Colors.black,
-              child: const Center(
+              width: double.infinity,
+              height: double.infinity,
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.red),
-                    SizedBox(height: 20),
+                    const CircularProgressIndicator(color: Colors.red),
+                    const SizedBox(height: 20),
                     Text(
-                      'Decodificando video...',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      _snifferStatus,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
             ),
+            
+          // Capa 3: El Reproductor de Cine Puramente Nativo (Chewie)
+          if (_isNativeMode && _chewieController != null && _videoPlayerController != null)
+             Container(
+               color: Colors.black,
+               width: double.infinity,
+               height: double.infinity,
+               child: _videoPlayerController!.value.isInitialized
+                  ? Chewie(controller: _chewieController!)
+                  : const Center(child: CircularProgressIndicator(color: Colors.white)),
+             ),
         ],
       ),
-      floatingActionButton: _extractedServers.isNotEmpty && !_isLoading
+      floatingActionButton: _extractedServers.isNotEmpty && !_isNativeMode
           ? FloatingActionButton(
               backgroundColor: Colors.red,
               child: const Icon(Icons.list),

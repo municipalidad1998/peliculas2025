@@ -40,6 +40,9 @@ dependencies:
   carousel_slider: ^5.1.2
   url_launcher: ^6.3.2
   webview_flutter: ^4.13.1
+  flutter_inappwebview: ^6.1.5
+  video_player: ^2.8.6
+  chewie: ^1.8.1
 
 dev_dependencies:
   flutter_test:
