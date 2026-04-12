@@ -33,16 +33,7 @@ class _DoramaCardState extends State<DoramaCard> {
   }
 
   Future<void> _resolveCover() async {
-    // 1. URL directa existente
-    String cover = widget.dorama.coverUrl ?? '';
-    if (cover.isNotEmpty) {
-      if (cover.startsWith('//')) cover = 'https:$cover';
-      else if (cover.startsWith('/')) cover = 'https://doramaexpress.com$cover';
-      setState(() => _finalCover = cover);
-      return;
-    }
-
-    // 2. Caché para la web de TMDB
+    // 1. Caché TMDB directo
     if (tmdbCache.containsKey(widget.dorama.titulo)) {
       setState(() => _finalCover = tmdbCache[widget.dorama.titulo]);
       return;
@@ -51,7 +42,8 @@ class _DoramaCardState extends State<DoramaCard> {
     if (_isFetching) return;
     _isFetching = true;
 
-    // 3. API TMDB OFICIAL
+    // 2. Intentar TMDB API para Pósteres en 4K (Prioridad Máxima)
+    bool tmdbSuccess = false;
     try {
       final cleanTitle = widget.dorama.titulo.replaceAll(RegExp(r'\[.*?\]'), '').trim();
       final query = Uri.encodeComponent(cleanTitle);
@@ -68,15 +60,45 @@ class _DoramaCardState extends State<DoramaCard> {
         if (results.isNotEmpty) {
           final firstResult = results.firstWhere((r) => r['poster_path'] != null, orElse: () => results[0]);
           if (firstResult['poster_path'] != null) {
-            final imageUrl = 'https://image.tmdb.org/t/p/w500${firstResult['poster_path']}';
+            final imageUrl = 'https://image.tmdb.org/t/p/w500\${firstResult['poster_path']}';
             tmdbCache[widget.dorama.titulo] = imageUrl;
             if (mounted) setState(() => _finalCover = imageUrl);
+            tmdbSuccess = true;
           }
         }
       }
-    } catch (e) {
-      // Excepción segura
+    } catch (e) { }
+
+    // 3. Fallback A: URL pre-agarrada del scraper (mega_catalogo)
+    if (!tmdbSuccess && widget.dorama.coverUrl != null && widget.dorama.coverUrl!.isNotEmpty) {
+      String cover = widget.dorama.coverUrl!;
+      if (cover.startsWith('//')) cover = 'https:$cover';
+      else if (cover.startsWith('/')) cover = 'https://doramaexpress.com$cover';
+      if (mounted) setState(() => _finalCover = cover);
+      tmdbSuccess = true;
     }
+
+    // 4. Extractor Definitivo En Vivo: Si la portada sigue vacía, raspar la página exacta del Dorama (og:image)
+    if (!tmdbSuccess) {
+       try {
+          final response = await http.get(Uri.parse(widget.dorama.url));
+          if (response.statusCode == 200) {
+             final docStr = response.body;
+             // Buscar un og:image a lo bruto
+             final ogMatch = RegExp(r'property="og:image" content="(.*?)"').firstMatch(docStr);
+             if (ogMatch != null && ogMatch.group(1) != null) {
+                if (mounted) setState(() => _finalCover = ogMatch.group(1));
+             } else {
+                // Alternativa: Primera imagen grande de la página (común en WordPress)
+                final imgMatch = RegExp(r'<img[^>]+class="[^"]*wp-post-image[^"]*"[^>]+src="([^"]+)"').firstMatch(docStr);
+                if (imgMatch != null && imgMatch.group(1) != null) {
+                   if (mounted) setState(() => _finalCover = imgMatch.group(1));
+                }
+             }
+          }
+       } catch (e) { }
+    }
+
     _isFetching = false;
   }
 

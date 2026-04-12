@@ -42,13 +42,19 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.cast_connected, color: Colors.blueAccent),
             SizedBox(width: 10),
-            Text('Dispositivos', style: TextStyle(color: Colors.white)),
+            Text('Transmitir a TV', style: TextStyle(color: Colors.white)),
           ],
         ),
         content: const Text(
-          'Para lanzar desde los 6 sitios integrados hacia la TV en 4K, usa la función Android nativa "Transmitir Pantalla" o "Smart View".',
+          'Debido a que extrajimos de 6 fuentes protegidas distintas, la señal de video nativa para Chromecast regular está encriptada.\n\nMétodo 1 (Directo): \nUsa el botón "Smart View" / "Transmitir Pantalla" desde el menú desplegable superior de tu celular Android hacia tu Smart TV.\n\nMétodo 2 (App Externa): \nDescarga la app gratuita "Web Video Caster" en la PlayStore y usa su navegador web incorporado para abrir las películas si deseas una conexión directa a Chromecast.',
           style: TextStyle(color: Colors.white70),
         ),
+        actions: [
+          TextButton(
+            child: const Text('Entendido', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
       ),
     );
   }
