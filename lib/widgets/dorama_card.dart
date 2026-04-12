@@ -60,7 +60,7 @@ class _DoramaCardState extends State<DoramaCard> {
         if (results.isNotEmpty) {
           final firstResult = results.firstWhere((r) => r['poster_path'] != null, orElse: () => results[0]);
           if (firstResult['poster_path'] != null) {
-            final imageUrl = 'https://image.tmdb.org/t/p/w500\${firstResult['poster_path']}';
+            final imageUrl = 'https://image.tmdb.org/t/p/w500${firstResult['poster_path']}';
             tmdbCache[widget.dorama.titulo] = imageUrl;
             if (mounted) setState(() => _finalCover = imageUrl);
             tmdbSuccess = true;

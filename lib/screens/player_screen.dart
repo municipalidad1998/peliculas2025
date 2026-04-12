@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 // ignore: depend_on_referenced_packages
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -60,6 +61,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    super.dispose();
+  }
+
   void _startScrapingServers() {
     // Inyectamos un JS muy agresivo que caza los reproductores integrados en la carga inicial
     final String jsCode = """
@@ -89,6 +97,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
          if(list.length > 0) {
             Extractor.postMessage(JSON.stringify(list));
          }
+
+         // Inyector removedor de basura comercial y barras para aparentar ser Nativo
+         let css = `header, footer, nav, aside, .sidebar, iframe[src*="ads"], .widget, .comments { display: none !important; }`;
+         let style = document.createElement('style'); style.innerHTML = css; document.head.appendChild(style);
       })();
     """;
     
@@ -137,6 +149,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void _playDirectly(VideoServer server) {
      Navigator.pop(context); // Cierra menu
      
+     // Activa Pantalla Completa y Horizontal!
+     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
+     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
      setState(() {
        _isDirectPlayMode = true; // Entramos en modo fullscreen limpio
        _isLoading = true;
