@@ -1,83 +1,86 @@
 import 'dart:convert';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as html;
+import 'package:html/parser.dart' show parse;
 import '../models/dorama.dart';
 
 class DoramaService {
+  List<Dorama> recentReleases = [];
   List<Dorama> allSeries = [];
   List<Dorama> allMovies = [];
-  List<Dorama> recentReleases = []; // Novedades capturadas en vivo
+
+  // Singleton
+  static final DoramaService _instance = DoramaService._internal();
+  factory DoramaService() => _instance;
+  DoramaService._internal();
 
   Future<void> init() async {
-    // 1. Cargar el catálogo masivo y ultra-rápido offline
-    await loadInitialData();
-    // 2. Conectarse a la web para jalar lo último subido
-    await fetchLiveUpdates();
-  }
-
-  Future<void> loadInitialData() async {
+    // 1. Carga Masiva desde Base de Datos Local Híbrida (mega_catalogo.json)
     try {
-      final String response = await rootBundle.loadString('assets/doramaexpress_completo.json');
+      final String response = await rootBundle.loadString('assets/mega_catalogo.json');
       final data = await json.decode(response);
       
-      final seriesData = data['series'] as List;
-      final moviesData = data['peliculas'] as List;
-      
-      allSeries = seriesData.map((e) => Dorama.fromJson(e, 'serie')).toList();
-      allMovies = moviesData.map((e) => Dorama.fromJson(e, 'movies')).toList();
+      final seriesList = (data['series'] as List?) ?? [];
+      allSeries = seriesList.map((m) {
+        return Dorama(
+          titulo: m['titulo'] ?? 'Desconocido', 
+          url: m['url'] ?? '', 
+          coverUrl: m['coverUrl'], 
+          category: m['category'] ?? 'serie'
+        );
+      }).toList();
+
+      final moviesList = (data['movies'] as List?) ?? [];
+      allMovies = moviesList.map((m) {
+        return Dorama(
+          titulo: m['titulo'] ?? 'Desconocido', 
+          url: m['url'] ?? '', 
+          coverUrl: m['coverUrl'], 
+          category: m['category'] ?? 'movies'
+        );
+      }).toList();
     } catch (e) {
-      print("Error cargando JSON local: $e");
+      print("Error leyendo mega catalogo local: $e");
+    }
+
+    // 2. Extracción EN VIVO y Ligera (limitada a doramaexpress para no saturar al usuario)
+    try {
+      fetchLiveUpdates();
+    } catch (e) {
+      print("Scraping live error: $e");
     }
   }
 
   Future<void> fetchLiveUpdates() async {
-    try {
-      final response = await http.get(Uri.parse('https://doramaexpress.com/'));
-      if (response.statusCode == 200) {
-        var document = html.parse(response.body);
-        var links = document.querySelectorAll('a[href]');
+    final response = await http.get(Uri.parse('https://doramaexpress.com/'));
+    if (response.statusCode == 200) {
+      var document = parse(response.body);
+      var linkElements = document.querySelectorAll('a');
+      for (var element in linkElements) {
+        String title = element.text.trim();
+        if (title.isEmpty) {
+          title = element.attributes['title'] ?? '';
+          if (title.isEmpty) {
+            title = element.attributes['alt'] ?? '';
+          }
+        }
         
-        for (var link in links) {
-          String href = link.attributes['href'] ?? '';
-          
-          if (href.contains('/serie/') || href.contains('/movies/') || href.contains('/episodio/')) {
-             if (href.contains('/page/')) continue;
-             
-             String title = link.attributes['title'] ?? '';
+        String href = element.attributes['href'] ?? '';
+        bool isIgnored = href.contains('facebook') || href.contains('instagram');
+        
+        if (title.length > 2 && !isIgnored && href.contains('doramaexpress.com')) {
+          if (!recentReleases.any((d) => d.url == href)) {
+             String category = href.contains('/movies/') ? 'movies' : 'serie';
              String coverUrl = '';
-             
-             var img = link.querySelector('img');
+             var img = element.querySelector('img');
              if (img != null) {
-               if (title.isEmpty) title = img.attributes['alt'] ?? '';
-               coverUrl = img.attributes['src'] ?? '';
+                coverUrl = img.attributes['src'] ?? '';
              }
              
-             if (title.isEmpty) {
-               title = link.text.trim();
-             }
-             
-             // Extracción inteligente filtrando basura
-             var ignorar = ['Ver ahora', 'View All', 'Whatsapp', 'Twitter', 'Ver más', 'Facebook'];
-             bool containsBannedWord = ignorar.any((word) => title.contains(word));
-
-             if (title.length > 2 && !containsBannedWord) {
-                // Solo si no existe ya en nuestros recientes (para no repetir el carrusel superior)
-                if (!recentReleases.any((d) => d.url == href)) {
-                   String category = href.contains('/movies/') ? 'movies' : 'serie';
-                   recentReleases.add(Dorama(
-                     titulo: title, 
-                     url: href, 
-                     coverUrl: coverUrl.isNotEmpty ? coverUrl : null, 
-                     category: category
-                   ));
-                }
-             }
+             recentReleases.add(Dorama(titulo: title, url: href, coverUrl: coverUrl.isNotEmpty ? coverUrl : null, category: category));
           }
         }
       }
-    } catch (e) {
-      print("Error conectando al scraper en vivo: $e");
     }
   }
 }
