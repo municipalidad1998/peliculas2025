@@ -3,8 +3,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../services/dorama_service.dart';
 import '../models/dorama.dart';
 import '../widgets/dorama_card.dart';
-import 'search_screen.dart';
 import 'info_screen.dart';
+import 'player_screen.dart';
+import 'search_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final DoramaService _service = DoramaService();
   bool _isLoading = true;
-  int _selectedIndex = 0; // 0=Inicio, 1=Series, 2=Películas
+  int _selectedIndex = 1;
 
   @override
   void initState() {
@@ -27,11 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     await _service.init();
     if (mounted) setState(() => _isLoading = false);
-  }
-
-  void _openSearch() {
-    final allContent = [..._service.allSeries, ..._service.allMovies];
-    showSearch(context: context, delegate: DoramaSearchDelegate(allContent));
   }
 
   void _openCastDialog() {
@@ -60,57 +57,41 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCurrentView() {
-    if (_selectedIndex == 0) {
-      // INICIO
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_service.recentReleases.isNotEmpty) _buildHeroCarousel(),
-            const SizedBox(height: 20),
-            _buildActionButtonsRow(), // Add HBO Max style round buttons
-            const SizedBox(height: 20),
-            if (_service.recentReleases.isNotEmpty)
-              _buildRow("Estrenos Globales", _service.recentReleases),
-            _buildRow("Te recomendamos", (_service.allSeries.toList()..shuffle()).take(40).toList()),
-            _buildRow("Visto recientemente", (_service.allMovies.toList()..shuffle()).take(40).toList()),
-            _buildRow("Catálogo de Series Asiáticas", (_service.allSeries.toList()..shuffle()).take(40).toList()),
-            const SizedBox(height: 40),
-          ],
-        ),
-      );
-    } else if (_selectedIndex == 1) {
-      // SERIES MODO REJILLA
-      return _buildGrid("Series", _service.allSeries);
-    } else {
-      // PELICULAS MODO REJILLA
-      return _buildGrid("Películas", _service.allMovies);
-    }
-  }
-
-  Widget _buildActionButtonsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildCircularFilter("Drama"),
-        _buildCircularFilter("Series"),
-        _buildCircularFilter("Películas"),
-        _buildCircularFilter("Estrenos"),
-      ],
-    );
-  }
-
-  Widget _buildCircularFilter(String label) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white24, width: 1),
+  Widget _buildHomeView() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_service.recentReleases.isNotEmpty) _buildHeroCarousel(),
+          const SizedBox(height: 20),
+          if (_service.recentReleases.isNotEmpty)
+            _buildRow("Estrenos Globales", _service.recentReleases),
+          _buildRow("Te recomendamos", (_service.allSeries.toList()..shuffle()).take(40).toList()),
+          _buildRow("Visto recientemente", (_service.allMovies.toList()..shuffle()).take(40).toList()),
+          const SizedBox(height: 40),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
     );
+  }
+
+  Widget _buildSeriesView() => _buildGrid("Series", _service.allSeries);
+  Widget _buildPeliculasView() => _buildGrid("Películas", _service.allMovies);
+
+  Widget _buildCurrentView() {
+    switch (_selectedIndex) {
+      case 0:
+        return CloudSearchScreen(allDoramas: [..._service.allSeries, ..._service.allMovies]);
+      case 1:
+        return _buildHomeView();
+      case 2:
+        return _buildPeliculasView();
+      case 3:
+        return _buildSeriesView();
+      case 4:
+        return const SettingsScreen();
+      default:
+        return _buildHomeView();
+    }
   }
 
   Widget _buildGrid(String title, List<Dorama> items) {
@@ -144,56 +125,31 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13), // Fondo HBO oscuro
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.black.withOpacity(0.5),
-        centerTitle: true,
-        title: const Text(
-          "DORAMFLIX", 
-          style: TextStyle(
-            color: Colors.white, 
-            fontSize: 22, 
-            fontWeight: FontWeight.w900, 
-            letterSpacing: 3.0
-          )
-        ),
-        leading: IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: _openSearch),
-        actions: [
-          IconButton(icon: const Icon(Icons.cast, color: Colors.white), onPressed: _openCastDialog),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1B1B22), Color(0xFF0A0A0C)], // HBO Style Gradient
-          )
-        ),
-        child: _isLoading 
-            ? const Center(child: CircularProgressIndicator(color: Colors.purpleAccent))
-            : _buildCurrentView(),
-      ),
+      backgroundColor: const Color(0xFF0F1715),
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF40E0D0)))
+          : _buildCurrentView(),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: Colors.white12, width: 1)),
         ),
         child: BottomNavigationBar(
-          backgroundColor: const Color(0xFF0F0F13),
-          selectedItemColor: Colors.purpleAccent,
+          backgroundColor: const Color(0xFF0B1310),
+          selectedItemColor: const Color(0xFF40E0D0),
           unselectedItemColor: Colors.white54,
           currentIndex: _selectedIndex,
           type: BottomNavigationBarType.fixed,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
           onTap: (index) => setState(() => _selectedIndex = index),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 28), label: 'Inicio'),
-            BottomNavigationBarItem(icon: Icon(Icons.tv, size: 28), label: 'Series'),
-            BottomNavigationBarItem(icon: Icon(Icons.movie_filter, size: 28), label: 'Películas'),
-            BottomNavigationBarItem(icon: Icon(Icons.person, size: 28), label: 'Perfil'),
+            BottomNavigationBarItem(icon: Icon(Icons.search, size: 26), label: 'Buscar'),
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined, size: 26), label: 'Inicio'),
+            BottomNavigationBarItem(icon: Icon(Icons.movie_outlined, size: 26), label: 'Películas'),
+            BottomNavigationBarItem(icon: Icon(Icons.tv, size: 26), label: 'Series'),
+            BottomNavigationBarItem(icon: Icon(Icons.settings_outlined, size: 26), label: 'Ajustes'),
           ],
         ),
       ),

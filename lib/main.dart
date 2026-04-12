@@ -15,10 +15,10 @@ class DoramaNetflixApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.red,
-        scaffoldBackgroundColor: Colors.black,
+        primaryColor: const Color(0xFF40E0D0),
+        scaffoldBackgroundColor: const Color(0xFF0F1715),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
+          backgroundColor: Color(0xFF0F1715),
         ),
       ),
       home: const HomeScreen(),
