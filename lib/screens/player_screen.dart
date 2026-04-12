@@ -23,24 +23,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
       ..setBackgroundColor(Colors.black)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onNavigationRequest: (NavigationRequest request) {
-            // BLOQUEADOR DE PUBLICIDAD ABSOLUTA
-            // Si la webview de DoramaExpress intenta mandarnos a una app externa
-            // o salirse de su página principal a otra misteriosa (ej, ads), lo destruimos!
-            if (!request.url.contains('doramaexpress.com') && 
-                !request.url.contains('yandispoiler.net')) { // A veces yandi es su CDN
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🚀 Anuncio emergente bloqueado y cerrado'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 1),
-                ),
-              );
-              return NavigationDecision.prevent; // Anular salto
-            }
-            return NavigationDecision.navigate; // Fluir normal
-          },
           onPageFinished: (String url) {
             if (mounted) {
               setState(() {
