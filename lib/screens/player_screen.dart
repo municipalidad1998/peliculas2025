@@ -49,7 +49,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void dispose() {
     _videoPlayerController?.dispose();
-    _chewieController?.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     super.dispose();
