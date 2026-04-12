@@ -23,7 +23,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _service.onDataUpdate = () {
+       if (mounted) setState(() {});
+    };
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _service.onDataUpdate = null;
+    super.dispose();
   }
 
   Future<void> _loadData() async {
