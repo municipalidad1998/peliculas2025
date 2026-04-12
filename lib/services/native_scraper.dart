@@ -74,7 +74,7 @@ class NativeScraperService {
         }
         
         // Estrategia 2: RegExp en el HTML (buscando 'file': 'http...mp4')
-        final RegExp urlRegex = RegExp(r"(http[s]?://[^\s'\"]+\.(?:mp4|m3u8)[^\s'\"]*)");
+        final RegExp urlRegex = RegExp("(http[s]?://[^\\\\s\'\"]+\\\\.(?:mp4|m3u8)[^\\\\s\'\"]*)");
         final match = urlRegex.firstMatch(response.body);
         if (match != null && match.group(1) != null) {
           return _cleanUrl(match.group(1)!);
