@@ -87,7 +87,7 @@ class NativeScraperService {
         }
 
         // Estrategia 3: URL general de mp4/m3u8 en cualquier lado del script
-        final RegExp urlRegex = RegExp(r"(http[s]?://[^\s'\"<>]+(?:mp4|m3u8)[^\s'\"<>]*)");
+        final RegExp urlRegex = RegExp(r'''(http[s]?://[^\s'"<>]+(?:mp4|m3u8)[^\s'"<>]*)''');
         final match = urlRegex.firstMatch(response.body);
         if (match != null && match.group(1) != null) {
           return _cleanUrl(match.group(1)!);
