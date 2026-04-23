@@ -16,9 +16,12 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      run: |
+        cd streamflix
+        chmod +x gradlew
+        ./gradlew assembleDebug
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: streamflix/app/build/outputs/apk/debug/app-debug.apk
