@@ -16,7 +16,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     - name: Grant execute permission for gradlew
-      run: chmod +x streamflix/gradlew
+      run: cd streamflix && chmod +x gradlew
     - name: Build with Gradle
       run: cd streamflix && ./gradlew assembleDebug
     - name: Upload APK
