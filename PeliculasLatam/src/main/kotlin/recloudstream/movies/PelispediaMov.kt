@@ -16,7 +16,7 @@ class PelispediaMov : BaseSiteProvider() {
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
         val results = doc.select("article, div[class*=movie], .poster, div[class*=item]").mapNotNull { el ->
-            val title = el.selectFirst("h2, h3, .title, .entry-title")?.text()
+            val title = el.selectFirst("h2.entry-title, h3, .title")?.text()
                 ?: el.selectFirst("img")?.attr("alt") ?: return@mapNotNull null
             val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
             val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
@@ -30,7 +30,7 @@ class PelispediaMov : BaseSiteProvider() {
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val doc = app.get("$mainUrl/?s=${query.encodeUri()}").document
         return doc.select("article, div[class*=movie], .poster").mapNotNull { el ->
-            val title = el.selectFirst("h2, h3, .title")?.text() ?: return@mapNotNull null
+            val title = el.selectFirst("h2.entry-title, h3, .title")?.text() ?: return@mapNotNull null
             val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
             val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Movie) {

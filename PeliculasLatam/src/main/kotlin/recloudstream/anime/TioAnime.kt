@@ -15,15 +15,17 @@ class TioAnime : BaseSiteProvider() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
-        // tioanime.com uses article.anime for cards
-        val results = doc.select("article.anime, .poster").mapNotNull { el ->
+        // tioanime.com uses article elements for anime cards
+        val results = doc.select("article").mapNotNull { el ->
             val a = el.selectFirst("a") ?: return@mapNotNull null
             val href = a.attr("href")
             if (href.isBlank()) return@mapNotNull null
-            val title = el.selectFirst("h2, h3")?.text()
+            val title = el.selectFirst("h2, h3, .title")?.text()
                 ?: el.selectFirst("img")?.attr("alt")
                 ?: return@mapNotNull null
-            val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
+            val poster = el.selectFirst("img")?.let {
+                it.attr("src").ifBlank { it.attr("data-src") }
+            }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Anime) {
                 this.posterUrl = img(poster)
             }
@@ -32,16 +34,18 @@ class TioAnime : BaseSiteProvider() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
+        // tioanime.com directory: /directorio?q={query}
         val doc = app.get("$mainUrl/directorio?q=${query.encodeUri()}").document
-        // Search results use same article.anime structure
-        return doc.select("article.anime, .poster").mapNotNull { el ->
-            val a = el.selectFirst("a") ?: return@mapNotNull null
-            val href = a.attr("href")
+        return doc.select("ul.animes li a, article a").mapNotNull { el ->
+            val href = el.attr("href")
             if (href.isBlank()) return@mapNotNull null
-            val title = el.selectFirst("h2, h3")?.text()
+            val title = el.selectFirst("h2, h3, .title")?.text()
                 ?: el.selectFirst("img")?.attr("alt")
+                ?: el.text()
                 ?: return@mapNotNull null
-            val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
+            val poster = el.selectFirst("img")?.let {
+                it.attr("src").ifBlank { it.attr("data-src") }
+            }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Anime) {
                 this.posterUrl = img(poster)
             }
@@ -51,17 +55,18 @@ class TioAnime : BaseSiteProvider() {
     override suspend fun load(url: String): LoadResponse? {
         val doc = app.get(url).document
         val title = doc.selectFirst("h1, h2.title")?.text()
-            ?: doc.selectFirst("meta[property=og:title]")?.attr("content") ?: return null
+            ?: doc.selectFirst("meta[property=og:title]")?.attr("content")
+            ?: return null
         val posterUrl = poster(doc)
         val plot = desc(doc)
         val genres = genres(doc)
 
-        // tioanime.com episodes are links with href starting with /ver/
-        val episodes = doc.select("a[href*=/ver/], ul.episodes-list li a, .episode-list a").mapNotNull { el ->
+        val episodes = doc.select("ul.episodes li a, .episode-list a, div.episodios a").mapNotNull { el ->
             val epUrl = el.attr("href")
             if (epUrl.isBlank()) return@mapNotNull null
             val epText = el.text()
-            val epNum = Regex("(?:Ep|Episode)\\s*(\\d+)").find(epText)?.groupValues?.get(1)?.toIntOrNull()
+            val epNum = Regex("(?:Ep|Episode|Cap)\\s*(\\d+)").find(epText)?.groupValues?.get(1)?.toIntOrNull()
+                ?: Regex("(\\d+)").find(epText)?.value?.toIntOrNull()
             newEpisode(resolveUrl(epUrl)) {
                 name = epText.trim()
                 season = 1
@@ -85,7 +90,8 @@ class TioAnime : BaseSiteProvider() {
     }
 
     override suspend fun loadLinks(
-        data: String, isCasting: Boolean,
+        data: String,
+        isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {

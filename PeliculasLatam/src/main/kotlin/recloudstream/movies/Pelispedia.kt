@@ -15,15 +15,16 @@ class Pelispedia : BaseSiteProvider() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
-        // pelispedia.is uses article.post.dfx.fcl.movies for cards
-        val results = doc.select("article.post, article[class*=post], .poster, div[class*=movie]").mapNotNull { el ->
+        val results = doc.select("article.post, article, div[class*=movie], div[class*=item]").mapNotNull { el ->
             val a = el.selectFirst("a") ?: return@mapNotNull null
             val href = a.attr("href")
             if (href.isBlank()) return@mapNotNull null
-            val title = el.selectFirst("h2, h3")?.text()
+            val title = el.selectFirst("h2.entry-title, h3, .title, .entry-title")?.text()
                 ?: el.selectFirst("img")?.attr("alt")
                 ?: return@mapNotNull null
-            val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
+            val poster = el.selectFirst("img")?.let {
+                it.attr("src").ifBlank { it.attr("data-src") }
+            }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Movie) {
                 this.posterUrl = img(poster)
             }
@@ -33,15 +34,16 @@ class Pelispedia : BaseSiteProvider() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val doc = app.get("$mainUrl/?s=${query.encodeUri()}").document
-        // Search results use same article.post structure
-        return doc.select("article.post, article[class*=post], .poster, div[class*=movie]").mapNotNull { el ->
+        return doc.select("article.post, article, div[class*=movie]").mapNotNull { el ->
             val a = el.selectFirst("a") ?: return@mapNotNull null
             val href = a.attr("href")
             if (href.isBlank()) return@mapNotNull null
-            val title = el.selectFirst("h2, h3")?.text()
+            val title = el.selectFirst("h2.entry-title, h3, .title")?.text()
                 ?: el.selectFirst("img")?.attr("alt")
                 ?: return@mapNotNull null
-            val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
+            val poster = el.selectFirst("img")?.let {
+                it.attr("src").ifBlank { it.attr("data-src") }
+            }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Movie) {
                 this.posterUrl = img(poster)
             }
@@ -50,18 +52,18 @@ class Pelispedia : BaseSiteProvider() {
 
     override suspend fun load(url: String): LoadResponse? {
         val doc = app.get(url).document
-        val title = doc.selectFirst("h1, h2.title, .entry-title")?.text()
-            ?: doc.selectFirst("meta[property=og:title]")?.attr("content") ?: return null
+        val title = doc.selectFirst("h1, h2.entry-title, .title")?.text()
+            ?: doc.selectFirst("meta[property=og:title]")?.attr("content")
+            ?: return null
         val posterUrl = poster(doc)
         val plot = desc(doc)
         val genres = genres(doc)
 
-        // Check for series episodes (capitulos)
-        val episodes = doc.select("a[href*=capitulo], a[href*=episode], div.episodios a").mapNotNull { el ->
+        val episodes = doc.select("div.episodios a, ul.episode-list li a, a[href*=capitulo]").mapNotNull { el ->
             val epUrl = el.attr("href")
             if (epUrl.isBlank()) return@mapNotNull null
             val epText = el.text()
-            val epNum = Regex("(?:Cap|Ep|Episode)\\s*(\\d+)").find(epText)?.groupValues?.get(1)?.toIntOrNull()
+            val epNum = Regex("(?:Cap|Ep)\\s*(\\d+)").find(epText)?.groupValues?.get(1)?.toIntOrNull()
             newEpisode(resolveUrl(epUrl)) {
                 name = epText.trim()
                 season = 1
@@ -85,7 +87,8 @@ class Pelispedia : BaseSiteProvider() {
     }
 
     override suspend fun loadLinks(
-        data: String, isCasting: Boolean,
+        data: String,
+        isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
@@ -95,7 +98,7 @@ class Pelispedia : BaseSiteProvider() {
 
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
-            if (src.isNotBlank() && !src.contains("google") && !src.contains("facebook")) {
+            if (src.isNotBlank()) {
                 loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
                 found = true
             }

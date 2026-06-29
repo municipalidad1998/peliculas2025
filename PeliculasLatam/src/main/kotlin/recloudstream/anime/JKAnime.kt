@@ -15,15 +15,17 @@ class JKAnime : BaseSiteProvider() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
-        // jkanime.net uses dynamic card classes with h2 for title
-        val results = doc.select("article, .card, div[class*=card], div[class*=anime]").mapNotNull { el ->
+        // jkanime.net uses div.movie-card with .movie-card__img and .movie-card__title
+        val results = doc.select("div.movie-card").mapNotNull { el ->
             val a = el.selectFirst("a") ?: return@mapNotNull null
             val href = a.attr("href")
             if (href.isBlank()) return@mapNotNull null
-            val title = el.selectFirst("h2, h3")?.text()
+            val title = el.selectFirst(".movie-card__title")?.text()
                 ?: el.selectFirst("img")?.attr("alt")
                 ?: return@mapNotNull null
-            val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
+            val poster = el.selectFirst(".movie-card__img img, img")?.let { 
+                it.attr("src").ifBlank { it.attr("data-src") } 
+            }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Anime) {
                 this.posterUrl = img(poster)
             }
@@ -32,17 +34,19 @@ class JKAnime : BaseSiteProvider() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
+        // jkanime.net search: /buscar/{query}/
         val doc = app.get("$mainUrl/buscar/${query.encodeUri()}/").document
-        // Search results are links in main content area
-        return doc.select("article, .card, div[class*=card], a[href*=anime]").mapNotNull { el ->
-            val a = el.selectFirst("a") ?: el.takeIf { it.tagName() == "a" } ?: return@mapNotNull null
+        return doc.select("div.movie-card").mapNotNull { el ->
+            val a = el.selectFirst("a") ?: return@mapNotNull null
             val href = a.attr("href")
             if (href.isBlank()) return@mapNotNull null
-            val title = el.selectFirst("h2, h3")?.text()
+            val title = el.selectFirst(".movie-card__title")?.text()
                 ?: el.selectFirst("img")?.attr("alt")
                 ?: a.text()
                 ?: return@mapNotNull null
-            val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
+            val poster = el.selectFirst(".movie-card__img img, img")?.let {
+                it.attr("src").ifBlank { it.attr("data-src") }
+            }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Anime) {
                 this.posterUrl = img(poster)
             }
@@ -58,7 +62,7 @@ class JKAnime : BaseSiteProvider() {
         val plot = desc(doc)
         val genres = genres(doc)
 
-        // jkanime.net uses .list-episodes container
+        // jkanime.net episode list
         val episodes = doc.select(".list-episodes a, div.episodios a, ul.episodes li a, a[href*=episode], a[href*=capitulo]").mapNotNull { el ->
             val epUrl = el.attr("href")
             if (epUrl.isBlank()) return@mapNotNull null
