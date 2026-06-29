@@ -1,30 +1,13 @@
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.android.")) {
-                useModule("com.android.tools.build:gradle:${requested.version}")
-            }
-            if (requested.id.id == "org.jetbrains.kotlin.android") {
-                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
-            }
-        }
+rootProject.name = "CloudstreamPlugins"
+
+// Auto-discover all provider subdirectories
+val disabled = listOf<String>()
+File(rootDir, ".").eachDir { dir ->
+    if (!disabled.contains(dir.name) && File(dir, "build.gradle.kts").exists()) {
+        include(dir.name)
     }
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
+fun File.eachDir(block: (File) -> Unit) {
+    listFiles()?.filter { it.isDirectory }?.forEach { block(it) }
 }
-
-rootProject.name = "CloudStreamExtensions"
-
-include(":Common")
-include(":ExampleProvider")

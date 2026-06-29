@@ -1,7 +1,0 @@
-com.cloudstreamext.common.Common-pngs-0 C:\Users\HP\Documents\nuevo\Common\build\generated\res\pngs\release
-com.cloudstreamext.common.Common-resValues-1 C:\Users\HP\Documents\nuevo\Common\build\generated\res\resValues\release
-com.cloudstreamext.common.Common-mergeReleaseResources-2 C:\Users\HP\Documents\nuevo\Common\build\intermediates\incremental\release\mergeReleaseResources\merged.dir
-com.cloudstreamext.common.Common-mergeReleaseResources-3 C:\Users\HP\Documents\nuevo\Common\build\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-com.cloudstreamext.common.Common-merged_res-4 C:\Users\HP\Documents\nuevo\Common\build\intermediates\merged_res\release
-com.cloudstreamext.common.Common-main-5 C:\Users\HP\Documents\nuevo\Common\src\main\res
-com.cloudstreamext.common.Common-release-6 C:\Users\HP\Documents\nuevo\Common\src\release\res

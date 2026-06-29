@@ -1,25 +1,14 @@
-# Build outputs (except APKs we need to host)
-/build/
-/app/build/
-Common/build/
-ExampleProvider/build/build/
-/buildSrc/build/
-
-# Local configuration
-local.properties
 *.iml
-.gradle/
-.idea/
-
-# OS files
+.gradle
+/local.properties
+/.idea
+*.hprof
 .DS_Store
-Thumbs.db
-
-# Gradle cache
-.gradle/
-
-# IDE
-.vscode/
-*.swp
-*.swo
-*~
+/build
+*.apk
+*.keystore
+PeliculasLatam/build/
+*.aar
+!builds/
+!repo.json
+!plugins.json

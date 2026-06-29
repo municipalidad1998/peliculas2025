@@ -1,0 +1,71 @@
+package recloudstream.live
+
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
+
+class FutbolLibre : MainAPI() {
+    override var mainUrl = "https://futbollibre.gg/es"
+    override var name = "FutbolLibre"
+    override val supportedTypes = setOf(TvType.Others)
+    override var lang = "es"
+    override val hasMainPage = true
+
+    private fun resolveUrl(href: String): String {
+        if (href.startsWith("http")) return href
+        if (href.startsWith("//")) return "https:$href"
+        return "${mainUrl.trimEnd('/')}/${href.trimStart('/')}"
+    }
+
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        val doc = app.get(mainUrl).document
+        val results = doc.select("article, div[class*=match], div[class*=event], .poster, a[href*=live]").mapNotNull { el ->
+            val title = el.selectFirst("h2, h3, .title, .event-name, img")?.let { it.attr("alt").ifBlank { it.text() } } ?: return@mapNotNull null
+            val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+            this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Others) {}
+        }
+        return newHomePageResponse(listOf(HomePageList("Futbol en Vivo", results, true)))
+    }
+
+    override suspend fun search(query: String, page: Int): SearchResponseList? {
+        val doc = app.get("$mainUrl/?s=${query.encodeUri()}").document
+        return doc.select("article, div[class*=match], .poster").mapNotNull { el ->
+            val title = el.selectFirst("h2, h3, .title")?.text() ?: return@mapNotNull null
+            val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+            this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Others) {}
+        }.toNewSearchResponseList()
+    }
+
+    override suspend fun load(url: String): LoadResponse? {
+        val doc = app.get(url).document
+        val title = doc.selectFirst("h1, h2.title")?.text()
+            ?: doc.selectFirst("meta[property=og:title]")?.attr("content") ?: return null
+        return newMovieLoadResponse(title.trim(), url, TvType.Others, url) {}
+    }
+
+    override suspend fun loadLinks(
+        data: String, isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val doc = app.get(data).document
+        val html = doc.html()
+        var found = false
+
+        doc.select("iframe[src]").forEach { iframe ->
+            val src = iframe.attr("src")
+            if (src.isNotBlank()) {
+                loadExtractor(resolveUrl(src), null, subtitleCallback, callback)
+                found = true
+            }
+        }
+
+        Regex("\"(https?://[^\"]+\\.m3u8[^\"]*)\"").findAll(html).forEach { match ->
+            loadExtractor(match.groupValues[1], null, subtitleCallback, callback)
+            found = true
+        }
+
+        return found
+    }
+}

@@ -1,4 +1,0 @@
-#Mon Jun 29 14:02:10 CST 2026
-base.0=C\:\\Users\\HP\\Documents\\nuevo\\ExampleProvider\\build\\intermediates\\dex\\release\\mergeDexRelease\\classes.dex
-path.0=classes.dex
-renamed.0=classes.dex
