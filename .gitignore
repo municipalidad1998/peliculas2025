@@ -1,0 +1,34 @@
+# Build outputs
+/build/
+/app/build/
+*/build/
+/buildSrc/build/
+
+# Local configuration
+local.properties
+*.iml
+.gradle/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Gradle
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android
+*.apk
+*.ap_
+*.dex
+*.class
+captures/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

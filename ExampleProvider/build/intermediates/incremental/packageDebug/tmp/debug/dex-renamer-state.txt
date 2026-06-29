@@ -1,4 +1,4 @@
-#Mon Jun 29 12:55:41 CST 2026
+#Mon Jun 29 13:02:23 CST 2026
 base.0=C\:\\Users\\HP\\Documents\\nuevo\\ExampleProvider\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\Users\\HP\\Documents\\nuevo\\ExampleProvider\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\0\\classes.dex
 base.2=C\:\\Users\\HP\\Documents\\nuevo\\ExampleProvider\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex

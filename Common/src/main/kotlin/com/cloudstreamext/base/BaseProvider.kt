@@ -3,11 +3,9 @@ package com.cloudstreamext.base
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.app
-import okhttp3.OkHttpClient
 import okhttp3.Headers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import java.util.concurrent.TimeUnit
 
 /**
  * Base provider for all CloudStream extensions.
@@ -68,37 +66,6 @@ abstract class BaseProvider : MainAPI() {
     }
 
     // --- HTTP Client ---
-
-    /**
-     * Builds a reusable OkHttpClient with configured timeouts and interceptors.
-     */
-    open fun buildClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .connectTimeout(connectTimeout, TimeUnit.SECONDS)
-            .readTimeout(readTimeout, TimeUnit.SECONDS)
-            .writeTimeout(requestTimeout, TimeUnit.SECONDS)
-            .followRedirects(true)
-            .followSslRedirects(true)
-            .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
-                    .header("User-Agent", userAgent)
-                    .apply {
-                        defaultHeaders.forEach { (key, value) ->
-                            header(key, value)
-                        }
-                    }
-                    .build()
-                chain.proceed(request)
-            }
-            .build()
-    }
-
-    /**
-     * HTTP client instance for this provider.
-     */
-    val client: OkHttpClient by lazy { buildClient() }
-
-    // --- Cookie Management ---
 
     private val cookies: MutableMap<String, String> = mutableMapOf()
 
