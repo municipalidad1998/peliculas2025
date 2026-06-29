@@ -98,7 +98,7 @@ abstract class LiveTVProvider : BaseProvider() {
         return try {
             val categories = fetchChannelCategories()
             val lists = categories.map { category ->
-                newHomePageList(category.name, category.channels)
+                HomePageListResponse(category.name, category.channels)
             }
             HomePageList("Live TV", lists)
         } catch (e: Exception) {

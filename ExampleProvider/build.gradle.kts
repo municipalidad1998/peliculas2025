@@ -1,5 +1,7 @@
-apply(plugin = "com.android.application")
-apply(plugin = "org.jetbrains.kotlin.android")
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
 
 android {
     namespace = "com.cloudstreamext.example"
@@ -16,7 +18,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
@@ -29,7 +34,6 @@ android {
         jvmTarget = "17"
     }
 
-    // CloudStream extension packaging
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -39,27 +43,14 @@ android {
 
 dependencies {
     implementation(project(":Common"))
-    implementation("com.github.recloudstream:cs3sources:3.0.0-alpha1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.17.1")
     implementation("com.google.code.gson:gson:2.10.1")
 }
 
-// CloudStream extension tasks
 tasks.register("make") {
     dependsOn("assembleRelease")
     doLast {
-        val apkDir = file("${layout.buildDirectory.get()}/outputs/apk/release")
-        println("Extension built successfully in: $apkDir")
-    }
-}
-
-tasks.register("deployWithAdb") {
-    dependsOn("make")
-    doLast {
-        exec {
-            commandLine("adb", "install", "-r",
-                "${layout.buildDirectory.get()}/outputs/apk/release/${project.name}-release.apk")
-        }
+        println("Extension built successfully!")
     }
 }

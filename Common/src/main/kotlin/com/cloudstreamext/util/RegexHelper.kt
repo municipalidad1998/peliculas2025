@@ -181,7 +181,7 @@ object RegexHelper {
      */
     fun decodeBase64(encoded: String): String? {
         return try {
-            java.util.Base64.getDecoder().decode(encoded).toString(Charsets.UTF_8)
+            android.util.Base64.decode(encoded, android.util.Base64.DEFAULT).toString(Charsets.UTF_8)
         } catch (e: Exception) {
             null
         }

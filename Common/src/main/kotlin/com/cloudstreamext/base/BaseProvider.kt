@@ -1,11 +1,9 @@
 package com.cloudstreamext.base
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.MainAPI.Companion.get
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.SubtitleHelper
+import com.lagradost.cloudstream3.app
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.Headers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -28,7 +26,7 @@ abstract class BaseProvider : MainAPI() {
     open var userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
     /** Custom headers for all requests */
-    open val defaultHeaders: MutableMap<String, String> = mutableMapOf(
+    override var defaultHeaders: MutableMap<String, String> = mutableMapOf(
         "Accept-Language" to "en-US,en;q=0.9",
         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     )
@@ -236,7 +234,8 @@ abstract class BaseProvider : MainAPI() {
             withRetry {
                 rateLimitedRequest()
                 val response = app.get(url, headers = buildRequestHeaders(customHeaders))
-                parseCookies(response.okhttpResponse.headers)
+                val resp = response.okhttpResponse
+                if (resp != null) parseCookies(resp.headers)
                 response.document
             }
         } catch (e: Exception) {
@@ -255,7 +254,8 @@ abstract class BaseProvider : MainAPI() {
             withRetry {
                 rateLimitedRequest()
                 val response = app.get(url, headers = buildRequestHeaders(customHeaders))
-                parseCookies(response.okhttpResponse.headers)
+                val resp = response.okhttpResponse
+                if (resp != null) parseCookies(resp.headers)
                 response.text
             }
         } catch (e: Exception) {

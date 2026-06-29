@@ -1,5 +1,7 @@
-apply(plugin = "com.android.library")
-apply(plugin = "org.jetbrains.kotlin.android")
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+}
 
 android {
     namespace = "com.cloudstreamext.common"
@@ -21,7 +23,7 @@ android {
 }
 
 dependencies {
-    implementation("com.github.recloudstream:cs3sources:3.0.0-alpha1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.17.1")
     implementation("com.google.code.gson:gson:2.10.1")

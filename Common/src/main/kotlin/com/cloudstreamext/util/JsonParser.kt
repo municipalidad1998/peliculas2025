@@ -22,7 +22,7 @@ import java.lang.reflect.Type
  */
 object JsonParser {
 
-    private val gson: Gson = GsonBuilder()
+    val gson: Gson = GsonBuilder()
         .setLenient()
         .create()
 
@@ -53,7 +53,7 @@ object JsonParser {
      */
     inline fun <reified T> fromJson(json: String): T? {
         return try {
-            gson.fromJson(json, object : TypeToken<T>() {}.type)
+            gson.fromJson(json, object : TypeToken<T>() {}.type as Type)
         } catch (e: Exception) {
             null
         }
@@ -64,7 +64,7 @@ object JsonParser {
      */
     inline fun <reified T> listFromJson(json: String): List<T>? {
         return try {
-            val type: Type = object : TypeToken<List<T>>() {}.type
+            val type: Type = object : TypeToken<List<T>>() {}.type as Type
             gson.fromJson(json, type)
         } catch (e: Exception) {
             null

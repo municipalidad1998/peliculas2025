@@ -58,7 +58,7 @@ class NetworkUtils(private val client: OkHttpClient? = null) {
             ApiResponse(
                 code = response.code,
                 body = response.text,
-                headers = response.okhttpResponse.headers.toMap(),
+                headers = response.okhttpResponse?.headers?.toMap() ?: emptyMap(),
                 isSuccessful = response.isSuccessful
             )
         } catch (e: Exception) {
@@ -83,7 +83,7 @@ class NetworkUtils(private val client: OkHttpClient? = null) {
             ApiResponse(
                 code = response.code,
                 body = response.text,
-                headers = response.okhttpResponse.headers.toMap(),
+                headers = response.okhttpResponse?.headers?.toMap() ?: emptyMap(),
                 isSuccessful = response.isSuccessful
             )
         } catch (e: Exception) {
@@ -108,7 +108,7 @@ class NetworkUtils(private val client: OkHttpClient? = null) {
             ApiResponse(
                 code = response.code,
                 body = response.text,
-                headers = response.okhttpResponse.headers.toMap(),
+                headers = response.okhttpResponse?.headers?.toMap() ?: emptyMap(),
                 isSuccessful = response.isSuccessful
             )
         } catch (e: Exception) {

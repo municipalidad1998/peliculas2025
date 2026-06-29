@@ -1,0 +1,8 @@
+com.cloudstreamext.example.ExampleProvider-packaged_res-0 C:\Users\HP\Documents\nuevo\Common\build\intermediates\packaged_res\debug
+com.cloudstreamext.example.ExampleProvider-pngs-1 C:\Users\HP\Documents\nuevo\ExampleProvider\build\generated\res\pngs\debug
+com.cloudstreamext.example.ExampleProvider-resValues-2 C:\Users\HP\Documents\nuevo\ExampleProvider\build\generated\res\resValues\debug
+com.cloudstreamext.example.ExampleProvider-packageDebugResources-3 C:\Users\HP\Documents\nuevo\ExampleProvider\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.cloudstreamext.example.ExampleProvider-packageDebugResources-4 C:\Users\HP\Documents\nuevo\ExampleProvider\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.cloudstreamext.example.ExampleProvider-merged_res-5 C:\Users\HP\Documents\nuevo\ExampleProvider\build\intermediates\merged_res\debug
+com.cloudstreamext.example.ExampleProvider-debug-6 C:\Users\HP\Documents\nuevo\ExampleProvider\src\debug\res
+com.cloudstreamext.example.ExampleProvider-main-7 C:\Users\HP\Documents\nuevo\ExampleProvider\src\main\res
