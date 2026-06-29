@@ -7,6 +7,15 @@ android {
     namespace = "com.cloudstreamext.example"
     compileSdk = 34
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("../debug.keystore")
+            storePassword = "android123"
+            keyAlias = "cloudstream"
+            keyPassword = "android123"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.cloudstreamext.example"
         minSdk = 21
@@ -18,6 +27,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -1,0 +1,23 @@
+[
+  {
+    "name": "ExampleProvider",
+    "internalName": "ExampleProvider",
+    "version": 1,
+    "description": "Multi-provider extension with movies, series, anime, and live TV support",
+    "authors": [
+      "municipalidad1998"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "AnimeMovie",
+      "Live"
+    ],
+    "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
+    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
+    "apiVersion": 1,
+    "fileSize": 1716678,
+    "fileHash": "sha256-1a2eb9f63a4956c1036ebaf0350cb204e35715e19d078b4e2529e6f8ba9f9d29"
+  }
+]

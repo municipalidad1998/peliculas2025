@@ -1,0 +1,8 @@
+{
+  "name": "CloudStreamExtensions",
+  "description": "Multi-provider CloudStream 3 extension with movies, series, anime, and live TV",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/plugins.json"
+  ]
+}
