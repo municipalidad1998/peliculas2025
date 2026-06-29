@@ -1,41 +1,17 @@
 [
-  {
-    "name": "JKAnime",
-    "internalName": "JKAnime",
-    "version": 1,
-    "description": "Anime online desde jkanime.net - sub español",
-    "authors": ["municipalidad1998"],
-    "tvTypes": ["Anime", "AnimeMovie"],
-    "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
-    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
-    "apiVersion": 1,
-    "fileSize": 1728197,
-    "fileHash": "sha256-53a2618b2f9d95fb51acd60589f31d8c6dba0d726edc78e67861dd1f2e317df5"
-  },
-  {
-    "name": "TioAnime",
-    "internalName": "TioAnime",
-    "version": 1,
-    "description": "Anime online desde tioanime.com - sub español HD",
-    "authors": ["municipalidad1998"],
-    "tvTypes": ["Anime", "AnimeMovie"],
-    "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
-    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
-    "apiVersion": 1,
-    "fileSize": 1728197,
-    "fileHash": "sha256-53a2618b2f9d95fb51acd60589f31d8c6dba0d726edc78e67861dd1f2e317df5"
-  },
-  {
-    "name": "Pelispedia",
-    "internalName": "Pelispedia",
-    "version": 1,
-    "description": "Peliculas y series desde pelispedia.is - HD español",
-    "authors": ["municipalidad1998"],
-    "tvTypes": ["Movie", "TvSeries"],
-    "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
-    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
-    "apiVersion": 1,
-    "fileSize": 1728197,
-    "fileHash": "sha256-53a2618b2f9d95fb51acd60589f31d8c6dba0d726edc78e67861dd1f2e317df5"
-  }
+  {"name":"JKAnime","internalName":"JKAnime","version":1,"description":"Anime online desde jkanime.net","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"TioAnime","internalName":"TioAnime","version":1,"description":"Anime online desde tioanime.com","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"Latanime","internalName":"Latanime","version":1,"description":"Anime latino desde latanime.org","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"AnimeJara","internalName":"AnimeJara","version":1,"description":"Anime desde animejara.com","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"JKAnimeFlv","internalName":"JKAnimeFlv","version":1,"description":"Anime desde jkanimeflv.com","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"VerAnimes","internalName":"VerAnimes","version":1,"description":"Anime desde veranimes.net","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"AnimeAV1","internalName":"AnimeAV1","version":1,"description":"Anime desde animeav1.com","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"EstrenosAnime","internalName":"EstrenosAnime","version":1,"description":"Anime desde estrenosanime.net","authors":["municipalidad1998"],"tvTypes":["Anime","AnimeMovie"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"Pelispedia","internalName":"Pelispedia","version":1,"description":"Peliculas y series desde pelispedia.is","authors":["municipalidad1998"],"tvTypes":["Movie","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"LaMovie","internalName":"LaMovie","version":1,"description":"Peliculas y series desde lamovie.org","authors":["municipalidad1998"],"tvTypes":["Movie","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"DeTodoPeliculas","internalName":"DeTodoPeliculas","version":1,"description":"Peliculas y series desde detodopeliculas.nu","authors":["municipalidad1998"],"tvTypes":["Movie","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"SoloLatino","internalName":"SoloLatino","version":1,"description":"Peliculas y series latino desde sololatino.net","authors":["municipalidad1998"],"tvTypes":["Movie","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"DoramasFlix","internalName":"DoramasFlix","version":1,"description":"Doramas desde doramasflix.co","authors":["municipalidad1998"],"tvTypes":["Anime","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"DoraMasyT","internalName":"DoraMasyT","version":1,"description":"Doramas desde doramasyt.com","authors":["municipalidad1998"],"tvTypes":["Anime","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"},
+  {"name":"TlNovelas","internalName":"TlNovelas","version":1,"description":"Novelas desde tlnovelas.net","authors":["municipalidad1998"],"tvTypes":["Movie","TvSeries"],"repositoryUrl":"https://github.com/municipalidad1998/peliculas2025","url":"https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk","apiVersion":1,"fileSize":1751033,"fileHash":"sha256-6aa1605d56bc92dae48b06c0635927362781bde186f947ddf75fa5aa7b1fcbbe"}
 ]
