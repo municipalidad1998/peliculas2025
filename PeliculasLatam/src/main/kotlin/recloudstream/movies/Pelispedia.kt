@@ -96,6 +96,7 @@ class Pelispedia : BaseSiteProvider() {
         val html = doc.html()
         var found = false
 
+        // Check regular iframe src
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
@@ -104,6 +105,22 @@ class Pelispedia : BaseSiteProvider() {
             }
         }
 
+        // Check data-src (lazy-loaded iframes)
+        doc.select("iframe[data-src]").forEach { iframe ->
+            val src = iframe.attr("data-src")
+            if (src.isNotBlank()) {
+                loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
+                found = true
+            }
+        }
+
+        // Also check for trembed URLs in HTML (Pelispedia uses this pattern)
+        Regex("data-src=['\"]([^'\"]*trembed[^'\"]*)['\"]").findAll(html).forEach { m ->
+            loadExtractor(resolveUrl(m.groupValues[1]), data, subtitleCallback, callback)
+            found = true
+        }
+
+        // Check for direct m3u8/mp4 links in page source
         Regex("\"(https?://[^\"]+\\.(m3u8|mp4)[^\"]*)\"").findAll(html).forEach { m ->
             loadExtractor(m.groupValues[1], data, subtitleCallback, callback)
             found = true
