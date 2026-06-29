@@ -1,23 +1,41 @@
 [
   {
-    "name": "ExampleProvider",
-    "internalName": "ExampleProvider",
+    "name": "JKAnime",
+    "internalName": "JKAnime",
     "version": 1,
-    "description": "Multi-provider extension with movies, series, anime, and live TV support",
-    "authors": [
-      "municipalidad1998"
-    ],
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "AnimeMovie",
-      "Live"
-    ],
+    "description": "Anime online desde jkanime.net - sub español",
+    "authors": ["municipalidad1998"],
+    "tvTypes": ["Anime", "AnimeMovie"],
     "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
     "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
     "apiVersion": 1,
-    "fileSize": 1716678,
-    "fileHash": "sha256-1a2eb9f63a4956c1036ebaf0350cb204e35715e19d078b4e2529e6f8ba9f9d29"
+    "fileSize": 1728197,
+    "fileHash": "sha256-53a2618b2f9d95fb51acd60589f31d8c6dba0d726edc78e67861dd1f2e317df5"
+  },
+  {
+    "name": "TioAnime",
+    "internalName": "TioAnime",
+    "version": 1,
+    "description": "Anime online desde tioanime.com - sub español HD",
+    "authors": ["municipalidad1998"],
+    "tvTypes": ["Anime", "AnimeMovie"],
+    "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
+    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
+    "apiVersion": 1,
+    "fileSize": 1728197,
+    "fileHash": "sha256-53a2618b2f9d95fb51acd60589f31d8c6dba0d726edc78e67861dd1f2e317df5"
+  },
+  {
+    "name": "Pelispedia",
+    "internalName": "Pelispedia",
+    "version": 1,
+    "description": "Peliculas y series desde pelispedia.is - HD español",
+    "authors": ["municipalidad1998"],
+    "tvTypes": ["Movie", "TvSeries"],
+    "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
+    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/ExampleProvider-v1.0.0.apk",
+    "apiVersion": 1,
+    "fileSize": 1728197,
+    "fileHash": "sha256-53a2618b2f9d95fb51acd60589f31d8c6dba0d726edc78e67861dd1f2e317df5"
   }
 ]
