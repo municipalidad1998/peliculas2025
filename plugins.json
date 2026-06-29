@@ -7,9 +7,12 @@
     "authors": ["municipalidad1998"],
     "tvTypes": ["Anime", "AnimeMovie", "Movie", "TvSeries", "Live", "Others"],
     "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
-    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/PeliculasLatam-v1.0.0.jar",
-    "apiVersion": 2,
+    "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/PeliculasLatam-v1.0.0.cs3",
+    "apiVersion": 1,
     "fileSize": 799822,
-    "fileHash": "sha256-7f7f306134bdf5277c97c622f01d0d2bfd19854fa20640dba3da1cb2a435a055"
+    "fileHash": "sha256-7f7f306134bdf5277c97c622f01d0d2bfd19854fa20640dba3da1cb2a435a055",
+    "status": 1,
+    "language": "es",
+    "iconUrl": ""
   }
 ]
