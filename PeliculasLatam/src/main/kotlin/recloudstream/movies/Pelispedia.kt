@@ -86,52 +86,6 @@ class Pelispedia : BaseSiteProvider() {
         }
     }
 
-    /**
-     * Collect all server URLs from a page's iframes and links, then pass each to CloudStream extractors.
-     * Returns true if any links were found.
-     */
-    private suspend fun collectAndLoadLinks(
-        doc: org.jsoup.nodes.Document,
-        pageUrl: String,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ): Boolean {
-        var found = false
-
-        // Extract all iframe src and data-src URLs
-        val iframeUrls = mutableListOf<String>()
-        doc.select("iframe[src]").forEach { el ->
-            val src = el.attr("src")
-            if (src.isNotBlank() && src.startsWith("http")) iframeUrls.add(src)
-        }
-        doc.select("iframe[data-src]").forEach { el ->
-            val src = el.attr("data-src")
-            if (src.isNotBlank() && src.startsWith("http")) iframeUrls.add(src)
-        }
-
-        for (url in iframeUrls) {
-            if (url.contains("trembed")) {
-                // Follow the trembed chain
-                try {
-                    val trembedDoc = app.get(url, referer = "$mainUrl/").document
-                    // trembed pages contain an iframe to the actual server
-                    val serverIframe = trembedDoc.selectFirst("iframe[src]")?.attr("src")
-                        ?: trembedDoc.selectFirst("iframe[data-src]")?.attr("data-src")
-                    if (!serverIframe.isNullOrBlank() && serverIframe.startsWith("http")) {
-                        // Try CloudStream's built-in extractors for this server
-                        loadExtractor(serverIframe, pageUrl, subtitleCallback, callback)
-                        found = true
-                    }
-                } catch (_: Exception) {}
-            } else {
-                loadExtractor(url, pageUrl, subtitleCallback, callback)
-                found = true
-            }
-        }
-
-        return found
-    }
-
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -162,8 +116,8 @@ class Pelispedia : BaseSiteProvider() {
 
         for (trembedUrl in trembedUrls) {
             try {
-                val response = app.get(trembedUrl, referer = "$mainUrl/")
-                val trembedDoc = response.document
+                val trembedDoc = app.get(trembedUrl, referer = "$mainUrl/").document
+                // trembed pages contain an iframe to the actual video server
                 val serverIframe = trembedDoc.selectFirst("iframe[src]")?.attr("src")
                     ?: trembedDoc.selectFirst("iframe[data-src]")?.attr("data-src")
 
@@ -172,10 +126,15 @@ class Pelispedia : BaseSiteProvider() {
                     loadExtractor(serverIframe, data, subtitleCallback, callback)
                     found = true
 
-                    // For pastea.me: follow the page and extract links from <a> tags
+                    // For pastea.me: follow the page and extract all server <a> links
                     if (serverIframe.contains("pastea.me")) {
                         val pasteDoc = app.get(serverIframe, referer = trembedUrl).document
-                        collectAndLoadLinks(pasteDoc, serverIframe, subtitleCallback, callback)
+                        pasteDoc.select("a[href]").forEach { a ->
+                            val href = a.attr("href")
+                            if (href.isNotBlank() && href.startsWith("http") && !href.contains("pastea.me")) {
+                                loadExtractor(href, data, subtitleCallback, callback)
+                            }
+                        }
                     }
                 }
             } catch (_: Exception) {}
