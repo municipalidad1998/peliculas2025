@@ -1,22 +1,17 @@
 package recloudstream.live
 
 import com.lagradost.cloudstream3.*
+import recloudstream.BaseSiteProvider
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
 
-class StreamXHD : MainAPI() {
+class StreamXHD : BaseSiteProvider() {
     override var mainUrl = "https://stream-xhd.com"
     override var name = "StreamXHD"
     override val supportedTypes = setOf(TvType.Others)
     override var lang = "es"
     override val hasMainPage = true
-
-    private fun resolveUrl(href: String): String {
-        if (href.startsWith("http")) return href
-        if (href.startsWith("//")) return "https:$href"
-        return "${mainUrl.trimEnd('/')}/${href.trimStart('/')}"
-    }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
@@ -56,13 +51,13 @@ class StreamXHD : MainAPI() {
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
-                loadExtractor(resolveUrl(src), null, subtitleCallback, callback)
+                loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
                 found = true
             }
         }
 
         Regex("\"(https?://[^\"]+\\.m3u8[^\"]*)\"").findAll(html).forEach { match ->
-            loadExtractor(match.groupValues[1], null, subtitleCallback, callback)
+            loadExtractor(match.groupValues[1], data, subtitleCallback, callback)
             found = true
         }
 

@@ -1,32 +1,17 @@
 package recloudstream.anime
 
 import com.lagradost.cloudstream3.*
+import recloudstream.BaseSiteProvider
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
 
-class AnimeJara : MainAPI() {
+class AnimeJara : BaseSiteProvider() {
     override var mainUrl = "https://animejara.com"
     override var name = "AnimeJara"
     override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie)
     override var lang = "es"
     override val hasMainPage = true
-
-    private fun resolveUrl(href: String): String {
-        if (href.startsWith("http")) return href
-        if (href.startsWith("//")) return "https:$href"
-        return "${mainUrl.trimEnd('/')}/${href.trimStart('/')}"
-    }
-
-    private fun img(url: String?): String? {
-        if (url.isNullOrBlank()) return null
-        val t = url.trim()
-        return when {
-            t.startsWith("http") -> t
-            t.startsWith("//") -> "https:$t"
-            else -> "$mainUrl/$t"
-        }
-    }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
@@ -102,13 +87,13 @@ class AnimeJara : MainAPI() {
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
-                loadExtractor(resolveUrl(src), null, subtitleCallback, callback)
+                loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
                 found = true
             }
         }
 
         Regex("\"(https?://[^\"]+\\.m3u8[^\"]*)\"").findAll(html).forEach { match ->
-            loadExtractor(match.groupValues[1], null, subtitleCallback, callback)
+            loadExtractor(match.groupValues[1], data, subtitleCallback, callback)
             found = true
         }
 

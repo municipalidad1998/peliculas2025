@@ -4,41 +4,27 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
+import recloudstream.BaseSiteProvider
 
-class JKAnime : MainAPI() {
+class JKAnime : BaseSiteProvider() {
     override var mainUrl = "https://jkanime.net"
     override var name = "JKAnime"
     override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie)
     override var lang = "es"
     override val hasMainPage = true
 
-    private fun resolveUrl(href: String): String {
-        if (href.startsWith("http")) return href
-        if (href.startsWith("//")) return "https:$href"
-        return "${mainUrl.trimEnd('/')}/${href.trimStart('/')}"
-    }
-
-    private fun img(url: String?): String? {
-        if (url.isNullOrBlank()) return null
-        val t = url.trim()
-        return when {
-            t.startsWith("http") -> t
-            t.startsWith("//") -> "https:$t"
-            else -> "$mainUrl/$t"
-        }
-    }
-
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
-        val results = doc.select("article.anime-card, div.anime-card, .poster, a[href*=anime]").mapNotNull { el ->
-            val title = el.selectFirst("h2, h3, .title, .anime-title, img")?.let { it.attr("alt").ifBlank { it.text() } } ?: return@mapNotNull null
-            val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+        // jkanime.net uses dynamic card classes with h2 for title
+        val results = doc.select("article, .card, div[class*=card], div[class*=anime]").mapNotNull { el ->
+            val a = el.selectFirst("a") ?: return@mapNotNull null
+            val href = a.attr("href")
+            if (href.isBlank()) return@mapNotNull null
+            val title = el.selectFirst("h2, h3")?.text()
+                ?: el.selectFirst("img")?.attr("alt")
+                ?: return@mapNotNull null
             val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
-            this.newMovieSearchResponse(
-                title.trim(),
-                resolveUrl(href),
-                TvType.Anime
-            ) {
+            this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Anime) {
                 this.posterUrl = img(poster)
             }
         }
@@ -47,9 +33,15 @@ class JKAnime : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val doc = app.get("$mainUrl/buscar/${query.encodeUri()}/").document
-        return doc.select("article.anime-card, div.anime-card, .poster").mapNotNull { el ->
-            val title = el.selectFirst("h2, h3, .title")?.text() ?: return@mapNotNull null
-            val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+        // Search results are links in main content area
+        return doc.select("article, .card, div[class*=card], a[href*=anime]").mapNotNull { el ->
+            val a = el.selectFirst("a") ?: el.takeIf { it.tagName() == "a" } ?: return@mapNotNull null
+            val href = a.attr("href")
+            if (href.isBlank()) return@mapNotNull null
+            val title = el.selectFirst("h2, h3")?.text()
+                ?: el.selectFirst("img")?.attr("alt")
+                ?: a.text()
+                ?: return@mapNotNull null
             val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Anime) {
                 this.posterUrl = img(poster)
@@ -62,13 +54,12 @@ class JKAnime : MainAPI() {
         val title = doc.selectFirst("h1, h2.title, .anime-title")?.text()
             ?: doc.selectFirst("meta[property=og:title]")?.attr("content")
             ?: return null
-        val poster = doc.selectFirst("meta[property=og:image]")?.attr("content")
-            ?: doc.selectFirst(".poster img, .cover img")?.attr("src")
-        val plot = doc.selectFirst("meta[property=og:description]")?.attr("content")
-            ?: doc.selectFirst(".description, .sinopsis, .synopsis")?.text()
-        val genres = doc.select(".genre a, .genres a, .generos a").map { it.text().trim() }
+        val posterUrl = poster(doc)
+        val plot = desc(doc)
+        val genres = genres(doc)
 
-        val episodes = doc.select("div.episodios a, ul.episodes li a, .episode-list a, .cap-list a, a[href*=episode], a[href*=capitulo]").mapNotNull { el ->
+        // jkanime.net uses .list-episodes container
+        val episodes = doc.select(".list-episodes a, div.episodios a, ul.episodes li a, a[href*=episode], a[href*=capitulo]").mapNotNull { el ->
             val epUrl = el.attr("href")
             if (epUrl.isBlank()) return@mapNotNull null
             val epText = el.text()
@@ -83,13 +74,13 @@ class JKAnime : MainAPI() {
 
         return if (episodes.isEmpty()) {
             newMovieLoadResponse(title.trim(), url, TvType.AnimeMovie, url) {
-                this.posterUrl = img(poster)
+                this.posterUrl = posterUrl
                 this.plot = plot
                 this.tags = genres
             }
         } else {
             newTvSeriesLoadResponse(title.trim(), url, TvType.Anime, episodes) {
-                this.posterUrl = img(poster)
+                this.posterUrl = posterUrl
                 this.plot = plot
                 this.tags = genres
             }
@@ -106,18 +97,16 @@ class JKAnime : MainAPI() {
         val html = doc.html()
         var found = false
 
-        // Try extractors for iframes
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
-                loadExtractor(resolveUrl(src), null, subtitleCallback, callback)
+                loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
                 found = true
             }
         }
 
-        // Direct m3u8 links
         Regex("\"(https?://[^\"]+\\.m3u8[^\"]*)\"").findAll(html).forEach { match ->
-            loadExtractor(match.groupValues[1], null, subtitleCallback, callback)
+            loadExtractor(match.groupValues[1], data, subtitleCallback, callback)
             found = true
         }
 

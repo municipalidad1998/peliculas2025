@@ -1,32 +1,17 @@
 package recloudstream.doramas
 
 import com.lagradost.cloudstream3.*
+import recloudstream.BaseSiteProvider
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
 
-class DoraMasyT : MainAPI() {
+class DoraMasyT : BaseSiteProvider() {
     override var mainUrl = "https://doramasyt.com"
     override var name = "DoraMasyT"
     override val supportedTypes = setOf(TvType.TvSeries, TvType.Anime)
     override var lang = "es"
     override val hasMainPage = true
-
-    private fun resolveUrl(href: String): String {
-        if (href.startsWith("http")) return href
-        if (href.startsWith("//")) return "https:$href"
-        return "${mainUrl.trimEnd('/')}/${href.trimStart('/')}"
-    }
-
-    private fun img(url: String?): String? {
-        if (url.isNullOrBlank()) return null
-        val t = url.trim()
-        return when {
-            t.startsWith("http") -> t
-            t.startsWith("//") -> "https:$t"
-            else -> "$mainUrl/$t"
-        }
-    }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
@@ -102,13 +87,13 @@ class DoraMasyT : MainAPI() {
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
-                loadExtractor(resolveUrl(src), null, subtitleCallback, callback)
+                loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
                 found = true
             }
         }
 
         Regex("\"(https?://[^\"]+\\.(m3u8|mp4)[^\"]*)\"").findAll(html).forEach { m ->
-            loadExtractor(m.groupValues[1], null, subtitleCallback, callback)
+            loadExtractor(m.groupValues[1], data, subtitleCallback, callback)
             found = true
         }
 

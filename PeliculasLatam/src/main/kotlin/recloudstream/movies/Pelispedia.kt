@@ -4,35 +4,25 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
+import recloudstream.BaseSiteProvider
 
-class Pelispedia : MainAPI() {
+class Pelispedia : BaseSiteProvider() {
     override var mainUrl = "https://pelispedia.is"
     override var name = "Pelispedia"
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
     override var lang = "es"
     override val hasMainPage = true
 
-    private fun resolveUrl(href: String): String {
-        if (href.startsWith("http")) return href
-        if (href.startsWith("//")) return "https:$href"
-        return "${mainUrl.trimEnd('/')}/${href.trimStart('/')}"
-    }
-
-    private fun img(url: String?): String? {
-        if (url.isNullOrBlank()) return null
-        val t = url.trim()
-        return when {
-            t.startsWith("http") -> t
-            t.startsWith("//") -> "https:$t"
-            else -> "$mainUrl/$t"
-        }
-    }
-
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val doc = app.get("$mainUrl/page/$page/").document
-        val results = doc.select("article, div[class*=movie], div[class*=item], .poster").mapNotNull { el ->
-            val title = el.selectFirst("h2, h3, .title, .entry-title")?.text() ?: return@mapNotNull null
-            val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+        val doc = app.get(mainUrl).document
+        // pelispedia.is uses article.post.dfx.fcl.movies for cards
+        val results = doc.select("article.post, article[class*=post], .poster, div[class*=movie]").mapNotNull { el ->
+            val a = el.selectFirst("a") ?: return@mapNotNull null
+            val href = a.attr("href")
+            if (href.isBlank()) return@mapNotNull null
+            val title = el.selectFirst("h2, h3")?.text()
+                ?: el.selectFirst("img")?.attr("alt")
+                ?: return@mapNotNull null
             val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Movie) {
                 this.posterUrl = img(poster)
@@ -43,9 +33,14 @@ class Pelispedia : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val doc = app.get("$mainUrl/?s=${query.encodeUri()}").document
-        return doc.select("article, div[class*=movie], .poster").mapNotNull { el ->
-            val title = el.selectFirst("h2, h3, .title, .entry-title")?.text() ?: return@mapNotNull null
-            val href = el.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+        // Search results use same article.post structure
+        return doc.select("article.post, article[class*=post], .poster, div[class*=movie]").mapNotNull { el ->
+            val a = el.selectFirst("a") ?: return@mapNotNull null
+            val href = a.attr("href")
+            if (href.isBlank()) return@mapNotNull null
+            val title = el.selectFirst("h2, h3")?.text()
+                ?: el.selectFirst("img")?.attr("alt")
+                ?: return@mapNotNull null
             val poster = el.selectFirst("img")?.let { it.attr("src").ifBlank { it.attr("data-src") } }
             this.newMovieSearchResponse(title.trim(), resolveUrl(href), TvType.Movie) {
                 this.posterUrl = img(poster)
@@ -57,13 +52,12 @@ class Pelispedia : MainAPI() {
         val doc = app.get(url).document
         val title = doc.selectFirst("h1, h2.title, .entry-title")?.text()
             ?: doc.selectFirst("meta[property=og:title]")?.attr("content") ?: return null
-        val poster = doc.selectFirst("meta[property=og:image]")?.attr("content")
-            ?: doc.selectFirst(".poster img")?.attr("src")
-        val plot = doc.selectFirst("meta[property=og:description]")?.attr("content")
-            ?: doc.selectFirst(".description, .sinopsis, .excerpt")?.text()
-        val genres = doc.select(".genre a, .genres a, .generos a").map { it.text().trim() }
+        val posterUrl = poster(doc)
+        val plot = desc(doc)
+        val genres = genres(doc)
 
-        val episodes = doc.select("div.episodios a, ul.episode-list li a, a[href*=capitulo], a[href*=episode]").mapNotNull { el ->
+        // Check for series episodes (capitulos)
+        val episodes = doc.select("a[href*=capitulo], a[href*=episode], div.episodios a").mapNotNull { el ->
             val epUrl = el.attr("href")
             if (epUrl.isBlank()) return@mapNotNull null
             val epText = el.text()
@@ -77,13 +71,13 @@ class Pelispedia : MainAPI() {
 
         return if (episodes.isEmpty()) {
             newMovieLoadResponse(title.trim(), url, TvType.Movie, url) {
-                this.posterUrl = img(poster)
+                this.posterUrl = posterUrl
                 this.plot = plot
                 this.tags = genres
             }
         } else {
             newTvSeriesLoadResponse(title.trim(), url, TvType.TvSeries, episodes) {
-                this.posterUrl = img(poster)
+                this.posterUrl = posterUrl
                 this.plot = plot
                 this.tags = genres
             }
@@ -102,13 +96,13 @@ class Pelispedia : MainAPI() {
         doc.select("iframe[src]").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank() && !src.contains("google") && !src.contains("facebook")) {
-                loadExtractor(resolveUrl(src), null, subtitleCallback, callback)
+                loadExtractor(resolveUrl(src), data, subtitleCallback, callback)
                 found = true
             }
         }
 
         Regex("\"(https?://[^\"]+\\.(m3u8|mp4)[^\"]*)\"").findAll(html).forEach { m ->
-            loadExtractor(m.groupValues[1], null, subtitleCallback, callback)
+            loadExtractor(m.groupValues[1], data, subtitleCallback, callback)
             found = true
         }
 
