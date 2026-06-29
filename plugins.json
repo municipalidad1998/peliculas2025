@@ -2,15 +2,15 @@
   {
     "name": "PeliculasLatam",
     "internalName": "PeliculasLatam",
-    "version": 4,
+    "version": 5,
     "description": "Anime, películas, series, doramas y novelas desde múltiples sitios latinos",
     "authors": ["municipalidad1998"],
     "tvTypes": ["Anime", "AnimeMovie", "Movie", "TvSeries", "Live", "Others"],
     "repositoryUrl": "https://github.com/municipalidad1998/peliculas2025",
     "url": "https://raw.githubusercontent.com/municipalidad1998/peliculas2025/main/builds/PeliculasLatam-v1.0.0.cs3",
     "apiVersion": 1,
-    "fileSize": 71224,
-    "fileHash": "sha256-5e86f3c79c401a3cd50f3563b150a2be2f6b56113c622d43ba191f333dd57748",
+    "fileSize": 73666,
+    "fileHash": "sha256-0ea5c121af43522b1dd4fb78fb24b81d9300178068974b67fbb4bffb4f59fa0c",
     "status": 1,
     "language": "es"
   }
